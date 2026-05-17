@@ -1,6 +1,6 @@
-# Kids Play Store - Game Builder Platform
+# SparkPlay — Games kids actually love
 
-A full-stack Next.js application that enables customers to create customized games for kids with multi-format export capabilities.
+A platform for parents to create personalised games for their kids — memory match, mazes, puzzles and more. Built with Next.js 16, Supabase, and Tailwind CSS.
 
 **Current Phase**: MVP (Minimal Infrastructure, Quick Revenue)
 

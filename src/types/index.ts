@@ -1,5 +1,5 @@
 /**
- * Type definitions for Kids Play Store application
+ * Type definitions for SparkPlay application
  */
 
 export type User = {

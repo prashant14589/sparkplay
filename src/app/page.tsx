@@ -64,7 +64,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-gradient-to-b from-violet-50 via-white to-blue-50">
       {/* Nav */}
       <nav className="flex items-center justify-between px-6 py-4 max-w-5xl mx-auto">
-        <span className="text-xl font-bold text-gray-900">🎮 Kids Play Store</span>
+        <span className="text-xl font-bold text-gray-900">🎮 SparkPlay</span>
         <div className="flex items-center gap-3">
           {isAuthenticated ? (
             <>
