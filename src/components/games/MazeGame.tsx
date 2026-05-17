@@ -115,7 +115,8 @@ export default function MazeGame({ theme, ageGroup = '4-6', childName, onWin }: 
   }
 
   // Cell size — fit in container (max ~400px wide)
-  const cellPx = Math.min(48, Math.floor(360 / size))
+  const maxWidth = typeof window !== 'undefined' ? Math.min(window.innerWidth * 0.85, 400) : 360
+  const cellPx = Math.min(48, Math.floor(maxWidth / size))
   const borderW = 2
 
   return (

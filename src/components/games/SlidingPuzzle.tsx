@@ -100,7 +100,9 @@ export default function SlidingPuzzle({ theme, ageGroup = '4-6', childName, onWi
   }, [tiles, won, moves, onWin])
 
   const emptyPos = tiles.indexOf(0)
-  const cellPx = Math.min(90, Math.floor(330 / size))
+  // Responsive: fit within ~90vw on mobile, cap at 90px on desktop
+  const maxWidth = typeof window !== 'undefined' ? Math.min(window.innerWidth * 0.85, 400) : 360
+  const cellPx = Math.min(90, Math.floor(maxWidth / size))
 
   const fmt = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
 
