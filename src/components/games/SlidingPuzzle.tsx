@@ -4,16 +4,27 @@ import { useState, useEffect, useCallback } from 'react'
 import { type Theme, THEMES } from '@/lib/themes'
 import HowToPlay from './HowToPlay'
 
-// Solved state: tiles[position] = tileId, where 0 = empty, 1..N²-1 = emoji index
-// Solved = tiles[i] === i for all i
+// Solved state: [1, 2, 3, ..., N²-1, 0]
+// tiles[pos] = tileId | tileId 0 = empty, tileId N = emojis[N-1]
+// Empty is at the LAST position when solved (bottom-right)
 const PUZZLE_SIZE: Record<string, number> = {
   '2-4': 3, '4-6': 3, '6-8': 4, '8-12': 4,
 }
 
+function solvedTiles(size: number): number[] {
+  // [1, 2, ..., N²-1, 0]  — empty last
+  return Array.from({ length: size * size }, (_, i) => (i + 1) % (size * size))
+}
+
+function isSolved(tiles: number[]): boolean {
+  const size = Math.round(Math.sqrt(tiles.length))
+  return tiles.every((v, i) => v === (i + 1) % (size * size))
+}
+
 function generatePuzzle(size: number): number[] {
-  // Start solved, then make random valid moves (guarantees solvability)
-  const tiles = Array.from({ length: size * size }, (_, i) => i)
-  let emptyPos = size * size - 1
+  // Start from solved state, make random valid moves → guaranteed solvable
+  const tiles = solvedTiles(size)
+  let emptyPos = size * size - 1 // empty starts at last position ✓
 
   for (let i = 0; i < size * size * 40; i++) {
     const row = Math.floor(emptyPos / size)
@@ -47,7 +58,7 @@ interface Props {
 export default function SlidingPuzzle({ theme, ageGroup = '4-6', childName, onWin }: Props) {
   const activeTheme = theme ?? THEMES[0]
   const size = PUZZLE_SIZE[ageGroup] ?? 4
-  const emojis = activeTheme.cards.slice(0, size * size - 1) // N²-1 emojis + 1 empty
+  const emojis = activeTheme.cards.slice(0, size * size - 1)
 
   const [tiles, setTiles] = useState<number[]>([])
   const [moves, setMoves] = useState(0)
@@ -55,12 +66,8 @@ export default function SlidingPuzzle({ theme, ageGroup = '4-6', childName, onWi
   const [seconds, setSeconds] = useState(0)
   const [running, setRunning] = useState(false)
 
-  // Generate client-side only (Math.random)
-  useEffect(() => {
-    reset()
-  }, [size, activeTheme.id]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { reset() }, [size, activeTheme.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Timer
   useEffect(() => {
     if (!running || won) return
     const t = setInterval(() => setSeconds((s) => s + 1), 1000)
@@ -69,10 +76,7 @@ export default function SlidingPuzzle({ theme, ageGroup = '4-6', childName, onWi
 
   function reset() {
     setTiles(generatePuzzle(size))
-    setMoves(0)
-    setSeconds(0)
-    setRunning(false)
-    setWon(false)
+    setMoves(0); setSeconds(0); setRunning(false); setWon(false)
   }
 
   const slide = useCallback((tilePos: number) => {
@@ -90,33 +94,25 @@ export default function SlidingPuzzle({ theme, ageGroup = '4-6', childName, onWi
     })
   }, [won, size])
 
-  // Check win after each move
   useEffect(() => {
-    if (tiles.length > 0 && tiles.every((v, i) => v === i) && !won && moves > 0) {
-      setWon(true)
-      setRunning(false)
-      onWin?.()
+    if (tiles.length > 0 && isSolved(tiles) && !won && moves > 0) {
+      setWon(true); setRunning(false); onWin?.()
     }
   }, [tiles, won, moves, onWin])
 
   const emptyPos = tiles.indexOf(0)
-  // Responsive: fit within ~90vw on mobile, cap at 90px on desktop
   const maxWidth = typeof window !== 'undefined' ? Math.min(window.innerWidth * 0.85, 400) : 360
   const cellPx = Math.min(90, Math.floor(maxWidth / size))
-
   const fmt = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
 
   if (tiles.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-48">
-        <div className="text-gray-400 animate-pulse">Setting up puzzle…</div>
-      </div>
-    )
+    return <div className="flex items-center justify-center h-48"><div className="text-gray-400 animate-pulse">Setting up puzzle…</div></div>
   }
 
   return (
     <div className="select-none flex flex-col items-center gap-4">
       <HowToPlay gameType="puzzle" />
+
       {/* Stats */}
       <div className="flex justify-between w-full text-sm text-gray-500">
         <span>{activeTheme.emoji} {activeTheme.name} · {size}×{size}</span>
@@ -132,8 +128,9 @@ export default function SlidingPuzzle({ theme, ageGroup = '4-6', childName, onWi
         style={{ width: size * cellPx, height: size * cellPx }}
       >
         {tiles.map((tileId, pos) => {
-          if (tileId === 0) return null // empty cell
-          const isCorrect = tileId === pos
+          if (tileId === 0) return null // empty cell — leave blank
+          // Correct when tileId === pos + 1 (solved = [1,2,...,N²-1,0])
+          const isCorrect = tileId === pos + 1
           const row = Math.floor(pos / size)
           const col = pos % size
           const adjToEmpty = isAdjacent(pos, emptyPos, size)
@@ -152,12 +149,12 @@ export default function SlidingPuzzle({ theme, ageGroup = '4-6', childName, onWi
                 transition: 'top 0.12s ease, left 0.12s ease',
               }}
               className={[
-                'rounded-xl flex items-center justify-center font-bold border-2',
+                'rounded-xl flex items-center justify-center border-2',
                 'focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400',
                 won
                   ? 'bg-green-50 border-green-300 cursor-default'
                   : isCorrect
-                    ? `bg-gradient-to-br ${activeTheme.color} border-transparent text-white shadow-md`
+                    ? `bg-gradient-to-br ${activeTheme.color} border-transparent shadow-md`
                     : adjToEmpty
                       ? 'bg-white border-violet-300 cursor-pointer hover:scale-105 hover:shadow-md active:scale-95'
                       : 'bg-white border-gray-200 cursor-default opacity-80',
@@ -169,7 +166,7 @@ export default function SlidingPuzzle({ theme, ageGroup = '4-6', childName, onWi
         })}
       </div>
 
-      {/* Goal preview + legend */}
+      {/* Goal + legend */}
       {!won && (
         <div className="flex items-center gap-3 text-xs text-gray-500 bg-gray-50 rounded-xl px-4 py-2 w-full">
           <div>
@@ -195,22 +192,15 @@ export default function SlidingPuzzle({ theme, ageGroup = '4-6', childName, onWi
           <p className="font-bold text-green-800 text-lg">
             {childName ? `${childName} solved it!` : 'Puzzle solved!'}
           </p>
-          <p className="text-sm text-green-600 mt-0.5">
-            {moves} moves · {fmt(seconds)}
-          </p>
-          <button
-            onClick={reset}
-            className="mt-3 rounded-lg bg-green-600 px-5 py-2 text-sm text-white font-semibold hover:bg-green-700"
-          >
+          <p className="text-sm text-green-600 mt-0.5">{moves} moves · {fmt(seconds)}</p>
+          <button onClick={reset} className="mt-3 rounded-lg bg-green-600 px-5 py-2 text-sm text-white font-semibold hover:bg-green-700">
             New puzzle →
           </button>
         </div>
       )}
 
       {!won && (
-        <button onClick={reset} className="text-xs text-gray-400 hover:text-gray-600 underline">
-          New puzzle
-        </button>
+        <button onClick={reset} className="text-xs text-gray-400 hover:text-gray-600 underline">New puzzle</button>
       )}
     </div>
   )
