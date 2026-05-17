@@ -7,8 +7,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <nav className="border-b border-gray-200 bg-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            <Link href="/dashboard" className="text-2xl font-bold text-gray-900">
-              Kids Play Store
+            <Link href="/" className="text-2xl font-bold text-gray-900 hover:text-violet-600 transition-colors">
+              🎮 SparkPlay
             </Link>
             <div className="flex items-center gap-6">
               <Link href="/dashboard" className="text-sm text-gray-600 hover:text-gray-900">
