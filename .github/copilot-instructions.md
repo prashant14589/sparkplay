@@ -1,94 +1,61 @@
-<!-- Use this file to provide workspace-specific custom instructions to Copilot. For more details, visit https://code.visualstudio.com/docs/copilot/copilot-customization#_use-a-githubcopilotinstructionsmd-file -->
+# SparkPlay — Copilot Instructions
 
-## Kids Play Store - Game Builder Platform
+A platform where parents create personalised games for their kids (memory match, mazes, puzzles). Built with Next.js 16, Supabase, and Tailwind CSS.
 
-A full-stack Next.js application enabling customers to build customized games for kids with multi-format export capabilities (web, PDF, Play Store, shareable links).
+## ⚠️ Mobile-First — Always
 
-### Tech Stack
+Every component must work on a 375px screen. This is non-negotiable.
 
-- **Framework**: Next.js 15+ with App Router
-- **Language**: TypeScript
-- **Frontend**: React 19+
-- **Styling**: Tailwind CSS
-- **Game Engine**: Phaser.js 3.x (for 2D game rendering and physics)
-- **Database**: PostgreSQL with Prisma ORM
-- **Authentication**: NextAuth.js v5
-- **Payment**: Stripe integration
-- **PDF Generation**: pdfkit or html2pdf
-- **API**: RESTful with Next.js API routes
-- **Validation**: Zod for schema validation
-- **State Management**: React Context + TanStack Query
+- **Build mobile first**, then add `md:` / `lg:` classes for larger screens
+- **No fixed-width containers** — use `w-full`, `max-w-*`, responsive fractions
+- **Sidebars on mobile** must collapse — use a toggle button pattern, never show both sidebar + content squished side by side
+- **Game grids** (puzzle tiles, maze cells, card grids) must calculate cell size from available screen width — never hardcode `330px` or similar
+- **Touch targets** must be ≥ 44px tall
+- **Before completing any UI task:** mentally check 375px / 768px / 1280px widths. Horizontal overflow is always a bug.
 
-### Project Structure
+## Tech Stack
+
+| What | How |
+|------|-----|
+| Framework | Next.js 16 App Router — `src/proxy.ts` is middleware (renamed from `middleware.ts` in v16) |
+| Auth | Supabase Auth — email/password + Google OAuth via `@supabase/ssr` |
+| Database | Supabase (PostgreSQL + RLS) — NOT Prisma (installed but dormant for Phase 2) |
+| Styling | Tailwind CSS v4 |
+| Deployment | Vercel — `NEXT_PUBLIC_*` vars are baked in at build time |
+
+## Project Structure
 
 ```
 src/
-├── app/                    # Next.js App Router
-│   ├── (auth)/            # Authentication pages (login, signup)
-│   ├── (dashboard)/       # User dashboard
-│   ├── api/               # API routes
-│   │   ├── games/
-│   │   ├── users/
-│   │   ├── auth/
-│   │   └── export/
-│   ├── builder/           # Game builder interface
-│   └── layout.tsx         # Root layout
-├── components/            # Reusable React components
-│   ├── GameBuilder/       # Game customization UI
-│   ├── GameEngine/        # Phaser.js integration
-│   ├── Editor/            # Editor components
-│   └── UI/                # Common UI components
-├── lib/                   # Utility functions
-│   ├── auth/              # Authentication utilities
-│   ├── db/                # Database utilities
-│   ├── api/               # API client helpers
-│   └── game/              # Game logic utilities
-├── types/                 # TypeScript type definitions
-├── hooks/                 # React custom hooks
-├── context/               # React context providers
-└── utils/                 # Helper functions
+├── app/
+│   ├── page.tsx              # Landing page + demo game (public)
+│   ├── login/ signup/        # Auth pages
+│   ├── dashboard/            # User's game library (protected)
+│   ├── builder/
+│   │   ├── page.tsx          # 3-step game creator: age → template → theme → customise
+│   │   └── [id]/page.tsx     # Game editor (responsive: mobile stack, desktop sidebar)
+│   ├── api/games/            # CRUD for games (auth-gated, Supabase RLS)
+│   └── auth/callback/        # OAuth redirect handler
+├── components/
+│   ├── MemoryMatch.tsx        # 5-level card matching game
+│   ├── SignupModal.tsx        # Post-level-1 signup gate
+│   └── games/
+│       ├── MazeGame.tsx       # Recursive-backtracking maze
+│       ├── SlidingPuzzle.tsx  # 15-puzzle with emoji tiles
+│       └── HowToPlay.tsx      # Collapsible instructions for each game type
+├── lib/
+│   ├── themes.ts             # All themes (8), age groups (4), level configs (5 levels per age)
+│   └── supabase/
+│       ├── client.ts         # createBrowserClient (use in 'use client' components)
+│       └── server.ts         # createServerClient (use in Server Components + API routes)
+└── proxy.ts                  # Session guard — protects /dashboard and /builder routes
 ```
 
-### Key Features
+## Key Conventions
 
-1. **Game Customization Builder**: Drag-and-drop UI for creating games
-2. **Game Engine**: Phaser.js-based rendering and physics
-3. **User Management**: Authentication, profiles, game collections
-4. **Game Execution**: Run games in browser with full Phaser support
-5. **Multi-Format Export**:
-   - Web (playable link)
-   - PDF (printable/downloadable)
-   - Mobile App (iOS/Android)
-   - Shareable Links with QR codes
-6. **Monetization**: Play Store distribution, in-app purchases
-7. **Admin Dashboard**: Game management, analytics, user management
-
-### Development Guidelines
-
-- Use TypeScript for all new code
-- Follow Next.js App Router conventions
-- Component-based architecture with reusable components
-- API-first approach for all backend functionality
-- Implement proper error handling and validation
-- Use Prisma migrations for database changes
-- Environment variables in `.env.local`
-- ESLint for code quality
-
-### Environment Variables Required
-
-```
-DATABASE_URL=postgresql://...
-NEXTAUTH_SECRET=...
-NEXTAUTH_URL=http://localhost:3000
-STRIPE_PUBLIC_KEY=...
-STRIPE_SECRET_KEY=...
-NEXT_PUBLIC_API_URL=...
-```
-
-### Running the Project
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run lint` - Run ESLint
-- `npm test` - Run tests (when configured)
-- `npm run db:migrate` - Run Prisma migrations
+- **Server auth**: always use `supabase.auth.getUser()` in API routes — never trust client-provided user IDs
+- **`NEXT_PUBLIC_*` vars**: inlined at build time — any change needs a Vercel redeploy
+- **Game content JSON**: always store `{ theme, ageGroup, childName, template }` in `games.content`
+- **Themes**: defined in `src/lib/themes.ts` — 18 emojis per theme, supports up to 18 pairs at max level
+- **Levels**: `getLevels(ageGroup)` returns 5 `{ pairs, cols }` configs — Level 1 free, 2–5 need sign-in
+- **Proxy exports**: `export { handler as proxy, handler as middleware }` + `export default` — all three needed for Vercel compatibility
