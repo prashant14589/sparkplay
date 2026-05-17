@@ -1,36 +1,128 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Kids Play Store - Game Builder Platform
+
+A full-stack Next.js application that enables customers to create customized games for kids with multi-format export capabilities.
+
+**Current Phase**: MVP (Minimal Infrastructure, Quick Revenue)
+
+## 🚀 MVP Phase 1 Features (4-6 weeks)
+
+- **Game Builder**: Simple drag-and-drop interface with pre-built templates
+- **User Authentication**: Supabase Auth (free tier)
+- **Save Games**: User library in Supabase
+- **Export Options**:
+  - PDF (printable)
+  - Web links (shareable + QR codes)
+- **Monetization**: Stripe integration for one-time purchases
+- **Minimal Infrastructure**: $0/month (Supabase free tier + Vercel free tier)
+
+**[View Full Phased Plan →](./PHASED_DEVELOPMENT_PLAN.md)**
+
+## Tech Stack
+
+- **Framework**: Next.js 14+ with App Router
+- **Language**: TypeScript
+- **Frontend**: React 19+, Tailwind CSS
+- **Game Engine**: Phaser.js (simplified for MVP)
+- **Database**: Supabase (PostgreSQL + Auth)
+- **Payment**: Stripe API
+- **PDF Export**: html2pdf or pdfkit
+
+## Infrastructure Costs
+
+| Phase            | Monthly Cost | Status  |
+| ---------------- | ------------ | ------- |
+| MVP (Phase 1)    | ~$0          | Current |
+| Growth (Phase 2) | ~$50         | Planned |
+| Scale (Phase 3)  | ~$250+       | Planned |
+
+See [PHASED_DEVELOPMENT_PLAN.md](./PHASED_DEVELOPMENT_PLAN.md) for complete cost breakdown.
+
+## Project Structure
+
+```
+src/
+├── app/               # Next.js App Router pages and API routes
+├── components/        # Reusable React components
+├── lib/              # Utility functions and helpers
+├── types/            # TypeScript type definitions
+├── hooks/            # Custom React hooks
+├── context/          # React context providers
+└── utils/            # Helper functions
+```
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+
+- npm or yarn
+- Supabase account (free tier available)
+
+### Installation
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Set up environment variables:
+
+```bash
+cp .env.local.example .env.local
+```
+
+3. Configure database:
+
+```bash
+npm run db:migrate
+```
+
+### Development
+
+Start the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Available Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `npm run dev` - Start development server with hot reload
+- `npm run build` - Build for production
+- `npm start` - Start production server
+- `npm run lint` - Run ESLint
+- `npm test` - Run test suite
+- `npm run db:migrate` - Run Prisma database migrations
 
-## Learn More
+## Environment Variables
 
-To learn more about Next.js, take a look at the following resources:
+Create a `.env.local` file with:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+DATABASE_URL=postgresql://user:password@localhost:5432/kids_play_store
+NEXTAUTH_SECRET=your-secret-key
+NEXTAUTH_URL=http://localhost:3000
+STRIPE_PUBLIC_KEY=pk_test_...
+STRIPE_SECRET_KEY=sk_test_...
+NEXT_PUBLIC_API_URL=http://localhost:3000
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Development Guidelines
 
-## Deploy on Vercel
+- Use TypeScript for all new code
+- Follow Next.js App Router conventions
+- Component-based architecture for reusability
+- API-first approach for backend functionality
+- Implement proper error handling and validation
+- Keep components focused and single-responsibility
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Contributing
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Please follow the existing code structure and patterns. Ensure all TypeScript types are properly defined and ESLint passes before submitting.
+
+## License
+
+MIT

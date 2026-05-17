@@ -1,0 +1,112 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id    String     @id @default(cuid())
+  email String     @unique
+  name  String?
+  image String?
+  password String?
+  
+  // Relations
+  games    Game[]
+  exports  Export[]
+  payments Payment[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([email])
+}
+
+model Game {
+  id          String  @id @default(cuid())
+  title       String
+  description String?
+  userId      String
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Game content stored as JSON
+  content     Json    @default("{}")
+  
+  // Metadata
+  thumbnail   String?
+  isPublished Boolean @default(false)
+  playCount   Int     @default(0)
+  likes       Int     @default(0)
+  
+  // Relations
+  exports   Export[]
+  payments  Payment[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([isPublished])
+  @@index([createdAt])
+}
+
+model Export {
+  id        String  @id @default(cuid())
+  gameId    String
+  game      Game    @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  format    String  // 'web', 'pdf', 'apk', 'ipa', 'link'
+  status    String  @default("pending") // 'pending', 'processing', 'completed', 'failed'
+  url       String?
+  error     String?
+  
+  createdAt DateTime @default(now())
+  completedAt DateTime?
+  
+  @@index([gameId])
+  @@index([userId])
+  @@index([status])
+}
+
+model Payment {
+  id              String  @id @default(cuid())
+  userId          String
+  user            User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gameId          String?
+  game            Game?   @relation(fields: [gameId], references: [id], onDelete: SetNull)
+  
+  amount          Float
+  currency        String  @default("USD")
+  status          String  @default("pending") // 'pending', 'completed', 'failed'
+  stripePaymentId String  @unique
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([gameId])
+  @@index([status])
+}
+
+model Session {
+  id        String  @id @default(cuid())
+  userId    String
+  
+  // Session data
+  data      Json    @default("{}")
+  
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([expiresAt])
+}

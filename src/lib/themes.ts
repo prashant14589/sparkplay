@@ -1,0 +1,195 @@
+export type AgeGroupId = '2-4' | '4-6' | '6-8' | '8-12'
+export type TemplateId = 'memory' | 'quiz' | 'word_search' | 'coloring' | 'maze' | 'puzzle'
+
+export const AGE_GROUPS = [
+  { id: '2-4'  as AgeGroupId, label: '2–4 yrs', emoji: '🧸', desc: 'Toddlers' },
+  { id: '4-6'  as AgeGroupId, label: '4–6 yrs', emoji: '🎒', desc: 'Pre-K & Kindergarten' },
+  { id: '6-8'  as AgeGroupId, label: '6–8 yrs', emoji: '📚', desc: 'Early Elementary' },
+  { id: '8-12' as AgeGroupId, label: '8–12 yrs', emoji: '🔬', desc: 'Upper Elementary' },
+]
+
+// 5-level config per age group: { pairs, cols }
+export type LevelConfig = { pairs: number; cols: number }
+
+export const LEVEL_CONFIGS: Record<AgeGroupId, LevelConfig[]> = {
+  '2-4':  [
+    { pairs: 3,  cols: 3 },
+    { pairs: 4,  cols: 4 },
+    { pairs: 6,  cols: 4 },
+    { pairs: 8,  cols: 4 },
+    { pairs: 10, cols: 5 },
+  ],
+  '4-6':  [
+    { pairs: 4,  cols: 4 },
+    { pairs: 6,  cols: 4 },
+    { pairs: 8,  cols: 4 },
+    { pairs: 10, cols: 5 },
+    { pairs: 12, cols: 6 },
+  ],
+  '6-8':  [
+    { pairs: 6,  cols: 4 },
+    { pairs: 8,  cols: 4 },
+    { pairs: 10, cols: 5 },
+    { pairs: 12, cols: 6 },
+    { pairs: 15, cols: 6 },
+  ],
+  '8-12': [
+    { pairs: 8,  cols: 4 },
+    { pairs: 10, cols: 5 },
+    { pairs: 12, cols: 6 },
+    { pairs: 15, cols: 6 },
+    { pairs: 18, cols: 6 },
+  ],
+}
+
+export type Theme = {
+  id: string
+  name: string
+  emoji: string
+  color: string
+  bg: string
+  ageGroups: AgeGroupId[]
+  cards: string[] // 18 emojis — supports up to 18 pairs at max level
+}
+
+export const THEMES: Theme[] = [
+  {
+    id: 'animals',
+    name: 'Animals',
+    emoji: '🐾',
+    color: 'from-green-400 to-emerald-500',
+    bg: 'bg-emerald-50',
+    ageGroups: ['2-4', '4-6', '6-8'],
+    cards: ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐸','🐵','🐔','🐧','🦆','🦅','🦉'],
+  },
+  {
+    id: 'dinos',
+    name: 'Dinosaurs',
+    emoji: '🦕',
+    color: 'from-lime-400 to-green-600',
+    bg: 'bg-lime-50',
+    ageGroups: ['4-6', '6-8', '8-12'],
+    cards: ['🦕','🦖','🐊','🐉','🦎','🥚','🌋','🦴','🐢','🦂','🪲','🌿','🌾','🏔️','💎','🪶','🦗','🌊'],
+  },
+  {
+    id: 'unicorns',
+    name: 'Unicorns',
+    emoji: '🦄',
+    color: 'from-pink-400 to-purple-500',
+    bg: 'bg-pink-50',
+    ageGroups: ['2-4', '4-6'],
+    cards: ['🦄','🌈','⭐','🌸','🎀','💎','🌺','✨','🌙','💫','🦋','🌷','🌼','💐','🎆','🧚','🪄','🎠'],
+  },
+  {
+    id: 'ocean',
+    name: 'Ocean',
+    emoji: '🐠',
+    color: 'from-blue-400 to-cyan-500',
+    bg: 'bg-cyan-50',
+    ageGroups: ['2-4', '4-6', '6-8'],
+    cards: ['🐠','🐟','🦈','🐙','🦞','🐋','🐚','🦀','🐡','🦑','🐬','🦐','🦭','🌊','⚓','🏖️','🪸','🐌'],
+  },
+  {
+    id: 'space',
+    name: 'Space',
+    emoji: '🚀',
+    color: 'from-indigo-500 to-violet-600',
+    bg: 'bg-indigo-50',
+    ageGroups: ['6-8', '8-12'],
+    cards: ['🚀','🌙','⭐','🪐','🌍','☀️','🛸','🌟','🌠','👽','☄️','🔭','🛰️','🌛','💫','🌌','🌑','🪩'],
+  },
+  {
+    id: 'superheroes',
+    name: 'Superheroes',
+    emoji: '⚡',
+    color: 'from-yellow-400 to-orange-500',
+    bg: 'bg-yellow-50',
+    ageGroups: ['6-8', '8-12'],
+    cards: ['⚡','🔥','💫','🌊','🌪️','🛡️','💥','🦸','🦹','🕷️','🦇','🌀','💪','🏹','⚔️','🔮','🌟','🎯'],
+  },
+  {
+    id: 'farm',
+    name: 'Farm',
+    emoji: '🐄',
+    color: 'from-yellow-300 to-amber-500',
+    bg: 'bg-amber-50',
+    ageGroups: ['2-4', '4-6'],
+    cards: ['🐄','🐖','🐑','🐓','🐴','🦆','🌽','🥕','🍎','🥛','🥚','🌻','🌾','🚜','🌈','🏡','🍓','🫐'],
+  },
+  {
+    id: 'food',
+    name: 'Yummy Food',
+    emoji: '🍕',
+    color: 'from-red-400 to-orange-500',
+    bg: 'bg-red-50',
+    ageGroups: ['2-4', '4-6', '6-8'],
+    cards: ['🍕','🍦','🍩','🍎','🍓','🌮','🍪','🧁','🍰','🎂','🍫','🍬','🍭','🍑','🥧','🧃','🍇','🍒'],
+  },
+]
+
+export const TEMPLATES = [
+  {
+    id: 'memory' as TemplateId,
+    name: 'Memory Match',
+    emoji: '🃏',
+    desc: 'Flip cards to find matching pairs',
+    color: 'from-purple-400 to-purple-600',
+    ageGroups: ['2-4', '4-6', '6-8', '8-12'] as AgeGroupId[],
+  },
+  {
+    id: 'quiz' as TemplateId,
+    name: 'Quiz Game',
+    emoji: '❓',
+    desc: 'Multiple choice questions',
+    color: 'from-blue-400 to-blue-600',
+    ageGroups: ['4-6', '6-8', '8-12'] as AgeGroupId[],
+  },
+  {
+    id: 'word_search' as TemplateId,
+    name: 'Word Search',
+    emoji: '🔤',
+    desc: 'Find hidden words in a grid',
+    color: 'from-green-400 to-green-600',
+    ageGroups: ['6-8', '8-12'] as AgeGroupId[],
+  },
+  {
+    id: 'coloring' as TemplateId,
+    name: 'Coloring Book',
+    emoji: '🎨',
+    desc: 'Interactive coloring pages',
+    color: 'from-yellow-400 to-orange-500',
+    ageGroups: ['2-4', '4-6'] as AgeGroupId[],
+  },
+  {
+    id: 'maze' as TemplateId,
+    name: 'Maze',
+    emoji: '🌀',
+    desc: 'Navigate through a maze',
+    color: 'from-pink-400 to-red-500',
+    ageGroups: ['4-6', '6-8', '8-12'] as AgeGroupId[],
+  },
+  {
+    id: 'puzzle' as TemplateId,
+    name: 'Sliding Puzzle',
+    emoji: '🧩',
+    desc: 'Rearrange tiles to complete a picture',
+    color: 'from-teal-400 to-cyan-600',
+    ageGroups: ['6-8', '8-12'] as AgeGroupId[],
+  },
+]
+
+export function getThemesForAge(ageGroup: AgeGroupId): Theme[] {
+  return THEMES.filter((t) => t.ageGroups.includes(ageGroup))
+}
+
+export function getTemplatesForAge(ageGroup: AgeGroupId) {
+  return TEMPLATES.filter((t) => t.ageGroups.includes(ageGroup))
+}
+
+export function getThemeById(id: string): Theme {
+  return THEMES.find((t) => t.id === id) ?? THEMES[0]
+}
+
+export function getLevels(ageGroup: AgeGroupId): LevelConfig[] {
+  return LEVEL_CONFIGS[ageGroup] ?? LEVEL_CONFIGS['4-6']
+}
