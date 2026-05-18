@@ -117,9 +117,11 @@ export default function WordSearch({
   const endSelect = useCallback(() => {
     if (!isPointerDown) return
     setIsPointerDown(false)
-    setMoves((m) => m + 1)
 
+    // Only count a "move" when the player actually attempts a real selection
+    // (2+ cells). Single-cell taps (accidental touches) don't count against score.
     if (selecting.length < 2) { setSelecting([]); return }
+    setMoves((m) => m + 1)
 
     const match = checkPath(grid, placed, selecting)
     if (match && !found.has(match.word)) {

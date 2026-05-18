@@ -98,12 +98,21 @@ export default function StoryQuest({ storyId, childName, theme = 'animals', ageG
   function makeChoice(nextId: string) {
     if (!genStory) return
     const nextScene = genStory.scenes[nextId]
+
+    // Guard: AI can return a next-ID that doesn't exist in the story tree.
+    // Rather than a blank screen, fall back to the start scene.
+    if (!nextScene) {
+      console.warn(`StoryQuest: scene "${nextId}" not found — restarting from start`)
+      setSceneId(genStory.startId ?? 'start')
+      return
+    }
+
     setSceneId(nextId)
     setHistory((h) => [...h, nextId])
     const newChoices = choicesMade + 1
     setChoicesMade(newChoices)
 
-    if (nextScene?.isEnd) {
+    if (nextScene.isEnd) {
       const r = recordCompletion('story', selectedTheme, ageGroup, 1, newChoices, 4)
       setResult({ stars: r.stars, coins: r.coinsEarned, newBadges: r.newBadges, streak: r.streak })
       setGameState('complete')

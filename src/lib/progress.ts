@@ -18,6 +18,16 @@
  *    ⭐⭐    moves ≤ tiles × 5     e.g. 8 tiles → ≤ 40 moves  "Smart!"
  *    ⭐      any completion                                     "Solved!"
  *
+ *  Quiz  (unit = total questions, moves = wrong answers)
+ *    ⭐⭐⭐  0 wrong                       "Perfect!"
+ *    ⭐⭐    ≤ ceil(questions × 0.4)       e.g. ≤ 2 wrong out of 5
+ *    ⭐      any completion
+ *
+ *  Word Search  (unit = words to find, moves = selection attempts)
+ *    ⭐⭐⭐  attempts ≤ words × 1.5        very efficient
+ *    ⭐⭐    attempts ≤ words × 3          reasonable
+ *    ⭐      any completion
+ *
  *  Story Quest  (unit = choices made, lower = more decisive)
  *    ⭐⭐⭐  choices ≤ 2   (decided quickly)
  *    ⭐⭐    choices ≤ 4
@@ -165,10 +175,13 @@ export function calcStars(
   template: string,
 ): number {
   const thresholds: Record<string, [number, number]> = {
-    memory:  [1.5, 2.5],
-    maze:    [2.5, 4.0],
-    puzzle:  [3.0, 5.0],
-    story:   [2.0, 4.0],
+    memory:       [1.5, 2.5],
+    maze:         [2.5, 4.0],
+    puzzle:       [3.0, 5.0],
+    story:        [2.0, 4.0],
+    quiz:         [0.0, 0.4],   // moves = wrong answers; 0 wrong = 3★, ≤40% wrong = 2★
+    word_search:  [1.5, 3.0],   // moves = selection attempts; ≤1.5×words = 3★
+    puzzle_maker: [2.0, 4.0],   // moves = pieces placed; low attempts = 3★
   }
   const [gold, silver] = thresholds[template] ?? [1.5, 2.5]
   if (moves <= Math.ceil(unit * gold))   return 3
