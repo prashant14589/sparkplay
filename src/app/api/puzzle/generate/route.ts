@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
 import { generatePuzzlePrompt } from '@/lib/puzzleGame'
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+import { checkAiRateLimit } from '@/lib/aiRateLimit'
 
 export async function POST(req: NextRequest) {
+  const rateLimit = await checkAiRateLimit('puzzle')
+  if (!rateLimit.ok) return rateLimit.response
+
   const { childName, scenarioLabel } = await req.json()
 
   if (!scenarioLabel) {
@@ -14,6 +16,8 @@ export async function POST(req: NextRequest) {
   if (!process.env.OPENAI_API_KEY) {
     return NextResponse.json({ error: 'OPENAI_API_KEY not configured' }, { status: 500 })
   }
+
+  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
   try {
     const prompt = generatePuzzlePrompt(childName, scenarioLabel)

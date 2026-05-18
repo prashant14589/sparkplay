@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
+import { checkAiRateLimit } from '@/lib/aiRateLimit'
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+let _anthropic: Anthropic | null = null
+function getAnthropicClient() {
+  if (!_anthropic) _anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+  return _anthropic
+}
 
 // Stable system prompt — cached after first request (requires ≥ 4096 tokens,
 // haiku-4-5 minimum). The prompt is intentionally detailed so it stays in cache.
@@ -81,6 +86,9 @@ const THEME_HINTS: Record<string, string> = {
 }
 
 export async function POST(req: NextRequest) {
+  const rateLimit = await checkAiRateLimit('story')
+  if (!rateLimit.ok) return rateLimit.response
+
   try {
     const { childName, theme, ageGroup } = await req.json()
 
@@ -98,7 +106,7 @@ export async function POST(req: NextRequest) {
       `The story must feel custom-made for ${name} — use their name naturally and often.\n` +
       `Return ONLY the JSON object, nothing else.`
 
-    const message = await client.messages.create({
+    const message = await getAnthropicClient().messages.create({
       model:      'claude-haiku-4-5-20251001',
       max_tokens: 2048,
       system: [

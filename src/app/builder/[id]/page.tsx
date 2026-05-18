@@ -12,6 +12,7 @@ import StoryQuest from '@/components/games/StoryQuest'
 import QuizGame from '@/components/games/QuizGame'
 import WordSearch from '@/components/games/WordSearch'
 import PuzzleMaker from '@/components/games/PuzzleMaker'
+import PaywallGate from '@/components/PaywallGate'
 
 function GamePreview({ game }: { game: Game }) {
   const content = game.content as Record<string, string>
@@ -32,27 +33,35 @@ function GamePreview({ game }: { game: Game }) {
       return <SlidingPuzzle theme={theme} ageGroup={ageGroup} childName={childName} />
     case 'story':
       return (
-        <div className="w-full max-w-sm mx-auto">
-          <StoryQuest childName={childName} />
-        </div>
+        <PaywallGate featureName="Story Quest" featureEmoji="📖">
+          <div className="w-full max-w-sm mx-auto">
+            <StoryQuest childName={childName} />
+          </div>
+        </PaywallGate>
       )
     case 'quiz':
       return (
-        <div className="w-full max-w-sm mx-auto">
-          <QuizGame theme={theme} ageGroup={ageGroup} childName={childName} level={1} />
-        </div>
+        <PaywallGate featureName="Quiz Game" featureEmoji="❓">
+          <div className="w-full max-w-sm mx-auto">
+            <QuizGame theme={theme} ageGroup={ageGroup} childName={childName} level={1} />
+          </div>
+        </PaywallGate>
       )
     case 'word_search':
       return (
-        <div className="w-full max-w-sm mx-auto">
-          <WordSearch theme={theme} ageGroup={ageGroup} childName={childName} level={1} />
-        </div>
+        <PaywallGate featureName="Word Search" featureEmoji="🔤">
+          <div className="w-full max-w-sm mx-auto">
+            <WordSearch theme={theme} ageGroup={ageGroup} childName={childName} level={1} />
+          </div>
+        </PaywallGate>
       )
     case 'puzzle_maker':
       return (
-        <div className="w-full max-w-sm mx-auto">
-          <PuzzleMaker childName={childName} />
-        </div>
+        <PaywallGate featureName="Puzzle Maker" featureEmoji="🧩">
+          <div className="w-full max-w-sm mx-auto">
+            <PuzzleMaker childName={childName} />
+          </div>
+        </PaywallGate>
       )
     default:
       return (

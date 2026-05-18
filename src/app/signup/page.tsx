@@ -78,6 +78,24 @@ export default function SignupPage() {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="••••••••" />
           </div>
+          {/* COPPA / age gate — required */}
+          <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                name="parentConsent"
+                required
+                className="mt-0.5 h-4 w-4 rounded border-gray-300 accent-blue-600 shrink-0"
+              />
+              <span className="text-sm text-gray-700 leading-snug">
+                I confirm I am a <strong>parent or guardian aged 18+</strong> and I consent to SparkPlay storing my family&apos;s data as described in the{' '}
+                <Link href="/privacy" className="text-blue-600 underline" target="_blank">Privacy Policy</Link>{' '}
+                and{' '}
+                <Link href="/terms" className="text-blue-600 underline" target="_blank">Terms of Service</Link>.
+              </span>
+            </label>
+          </div>
+
           <button type="submit" disabled={pending}
             className="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-white font-semibold hover:bg-blue-700 disabled:opacity-60">
             {pending ? 'Creating account…' : 'Create Account'}
