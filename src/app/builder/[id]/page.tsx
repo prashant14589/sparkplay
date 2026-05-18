@@ -11,6 +11,7 @@ import SlidingPuzzle from '@/components/games/SlidingPuzzle'
 import StoryQuest from '@/components/games/StoryQuest'
 import QuizGame from '@/components/games/QuizGame'
 import WordSearch from '@/components/games/WordSearch'
+import PuzzleMaker from '@/components/games/PuzzleMaker'
 
 function GamePreview({ game }: { game: Game }) {
   const content = game.content as Record<string, string>
@@ -45,6 +46,12 @@ function GamePreview({ game }: { game: Game }) {
       return (
         <div className="w-full max-w-sm mx-auto">
           <WordSearch theme={theme} ageGroup={ageGroup} childName={childName} level={1} />
+        </div>
+      )
+    case 'puzzle_maker':
+      return (
+        <div className="w-full max-w-sm mx-auto">
+          <PuzzleMaker childName={childName} />
         </div>
       )
     default:

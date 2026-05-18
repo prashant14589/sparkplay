@@ -4,6 +4,8 @@ import {
   isValidPath,
   getWordPositions,
   getWordsForTheme,
+  pathToWord,
+  computePathFromStartTo,
   GRID_SIZES,
   type GridCell,
 } from '../wordSearch'
@@ -77,6 +79,95 @@ describe('getWordPositions', () => {
       expect(p.row).toBeGreaterThanOrEqual(0)
       expect(p.col).toBeGreaterThanOrEqual(0)
     })
+  })
+})
+
+// ── NEW: word findability ────────────────────────────────────────────────────
+
+describe('word findability — every placed word must be readable in the grid', () => {
+  it('all placed words are readable at their stored coordinates', () => {
+    const words = ['CAT', 'DOG', 'FISH', 'BIRD', 'LION']
+    const { grid, placed } = buildGrid(words, 12)
+
+    placed.forEach((pw) => {
+      let extracted = ''
+      for (let i = 0; i < pw.word.length; i++) {
+        const r = pw.startRow + pw.dirRow * i
+        const c = pw.startCol + pw.dirCol * i
+        extracted += grid[r]?.[c]?.letter ?? '?'
+      }
+      expect(extracted).toBe(pw.word)
+    })
+  })
+
+  it('pathToWord extracts the correct string from a horizontal word', () => {
+    const { grid, placed } = buildGrid(['CAT'], 8)
+    if (placed.length === 0) return
+    const pw = placed[0]
+    const positions = getWordPositions(grid, pw)
+    expect(pathToWord(grid, positions)).toBe(pw.word)
+  })
+
+  it('pathToWord extracts the correct string from a diagonal word', () => {
+    // Force a diagonal by running enough attempts
+    const words = ['TIGER', 'SNAKE', 'EAGLE', 'CRANE', 'WHALE']
+    const { grid, placed } = buildGrid(words, 12)
+    const diagonal = placed.find((pw) => pw.dirRow !== 0 && pw.dirCol !== 0)
+    if (!diagonal) return // no diagonal placed this run — skip
+    const positions = getWordPositions(grid, diagonal)
+    expect(pathToWord(grid, positions)).toBe(diagonal.word)
+  })
+})
+
+// ── NEW: computePathFromStartTo ──────────────────────────────────────────────
+
+describe('computePathFromStartTo', () => {
+  it('computes a horizontal path', () => {
+    const path = computePathFromStartTo({ row: 0, col: 0 }, { row: 0, col: 3 })
+    expect(path).toEqual([
+      { row: 0, col: 0 },
+      { row: 0, col: 1 },
+      { row: 0, col: 2 },
+      { row: 0, col: 3 },
+    ])
+  })
+
+  it('computes a vertical path going upward', () => {
+    const path = computePathFromStartTo({ row: 3, col: 2 }, { row: 0, col: 2 })
+    expect(path).toEqual([
+      { row: 3, col: 2 },
+      { row: 2, col: 2 },
+      { row: 1, col: 2 },
+      { row: 0, col: 2 },
+    ])
+  })
+
+  it('computes a diagonal path (top-left to bottom-right)', () => {
+    const path = computePathFromStartTo({ row: 0, col: 0 }, { row: 2, col: 2 })
+    expect(path).toEqual([
+      { row: 0, col: 0 },
+      { row: 1, col: 1 },
+      { row: 2, col: 2 },
+    ])
+  })
+
+  it('computes a reverse diagonal (bottom-right to top-left)', () => {
+    const path = computePathFromStartTo({ row: 2, col: 2 }, { row: 0, col: 0 })
+    expect(path).toEqual([
+      { row: 2, col: 2 },
+      { row: 1, col: 1 },
+      { row: 0, col: 0 },
+    ])
+  })
+
+  it('returns just the start cell when start === end', () => {
+    const path = computePathFromStartTo({ row: 1, col: 1 }, { row: 1, col: 1 })
+    expect(path).toEqual([{ row: 1, col: 1 }])
+  })
+
+  it('returns null for a non-straight path (e.g. 2 right, 1 down)', () => {
+    const result = computePathFromStartTo({ row: 0, col: 0 }, { row: 1, col: 2 })
+    expect(result).toBeNull()
   })
 })
 

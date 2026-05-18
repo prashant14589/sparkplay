@@ -120,7 +120,10 @@ export default function MemoryMatch({
   }, [cards, selected, locked, done, moves])
 
   useEffect(() => {
-    // Guard: moves > 0 prevents false trigger on freshly-reset cards
+    // Guard: moves > 0 prevents false trigger on freshly-reset cards.
+    // `done` is intentionally NOT in the dep array — if it were, calling
+    // setDone(false) in nextLevel() would re-trigger this effect with the
+    // still-matched cards from the previous level and skip a level.
     if (cards.length > 0 && moves > 0 && cards.every((c) => c.isMatched) && !done) {
       setDone(true)
       setTimerOn(false)
@@ -129,7 +132,7 @@ export default function MemoryMatch({
       setTotalCoins(getProgress().totalCoins)
       setCompletionResult({ stars: r.stars, coins: r.coinsEarned, newBadges: r.newBadges, streak: r.streak })
     }
-  }, [cards, done]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [cards]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function goToLevel(lvl: number) { setCurrentLevel(lvl); setDone(false) }
   function nextLevel() { if (currentLevel < TOTAL_LEVELS) { setCurrentLevel((l) => l + 1); setDone(false) } }

@@ -119,6 +119,42 @@ function tryPlaceWord(grid: GridCell[][], word: string, size: number): PlacedWor
 
 // ─── Validation helpers ────────────────────────────────────────────────────
 
+/**
+ * Given a start cell and an end cell, compute the full straight-line path.
+ * Returns null if the two points don't form a straight horizontal, vertical,
+ * or 45° diagonal line — i.e. the kind of paths a word-search allows.
+ *
+ * This is used by the WordSearch component to rebuild the selection path on
+ * every pointer-move event (start→current), which correctly handles diagonals
+ * without accumulating stray intermediate cells.
+ */
+export function computePathFromStartTo(
+  start: CellPos,
+  end: CellPos,
+): CellPos[] | null {
+  const rowDiff = end.row - start.row
+  const colDiff = end.col - start.col
+
+  // Same cell
+  if (rowDiff === 0 && colDiff === 0) return [start]
+
+  const dr = Math.sign(rowDiff)
+  const dc = Math.sign(colDiff)
+
+  const absRow = Math.abs(rowDiff)
+  const absCol = Math.abs(colDiff)
+
+  // Must be horizontal, vertical, or exactly 45° diagonal
+  if (dr !== 0 && dc !== 0 && absRow !== absCol) return null
+
+  const distance = Math.max(absRow, absCol)
+  return Array.from({ length: distance + 1 }, (_, i) => ({
+    row: start.row + dr * i,
+    col: start.col + dc * i,
+  }))
+}
+
+
 export function getWordPositions(grid: GridCell[][], placed: PlacedWord): CellPos[] {
   return Array.from({ length: placed.word.length }, (_, i) => ({
     row: placed.startRow + placed.dirRow * i,

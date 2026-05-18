@@ -8,6 +8,7 @@ import {
   checkPath,
   getWordPositions,
   isValidPath,
+  computePathFromStartTo,
   GRID_SIZES,
   type GridCell,
   type PlacedWord,
@@ -105,10 +106,12 @@ export default function WordSearch({
   }
 
   function continueSelect(row: number, col: number) {
-    if (!isPointerDown) return
-    const next: CellPos[] = [...selecting, { row, col }]
-    // Only extend if still a valid path
-    if (isValidPath(next)) setSelecting(next)
+    if (!isPointerDown || selecting.length === 0) return
+    // Always recompute the full path from the fixed START cell to the CURRENT cell.
+    // This handles diagonals correctly — intermediate cells the pointer accidentally
+    // hovers over are ignored rather than accumulated into a broken path.
+    const path = computePathFromStartTo(selecting[0], { row, col })
+    if (path) setSelecting(path)
   }
 
   const endSelect = useCallback(() => {
