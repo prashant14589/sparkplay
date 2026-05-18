@@ -144,8 +144,14 @@ export default function MemoryMatch({
 
   const matched = cards.filter((c) => c.isMatched).length / 2
   const isLevelLocked = (lvl: number) => lvl > 1 && !isAuthenticated
-  // Bigger cells so Twemoji illustrations look great — min 76px, max 92px
-  const cellPx = Math.min(92, Math.max(76, Math.floor(360 / levelCfg.cols)))
+
+  // Cell size — computed from actual viewport so the grid never overflows at 375px.
+  // ~64px is eaten by page-container + game-card padding on both sides.
+  const availW = typeof window !== 'undefined'
+    ? Math.min(window.innerWidth - 64, 320)
+    : 311
+  const gapTotal = (levelCfg.cols - 1) * 8
+  const cellPx = Math.max(44, Math.floor((availW - gapTotal) / levelCfg.cols))
   const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`
 
   if (cards.length === 0) {
@@ -193,7 +199,7 @@ export default function MemoryMatch({
               disabled={locked}
               title={locked ? 'Sign up to unlock' : `Level ${lvl} — ${levels[lvl - 1].pairs} pairs`}
               className={[
-                'px-3 py-1.5 rounded-full text-xs font-black transition-all border-2 min-h-[36px]',
+                'px-3 py-2 rounded-full text-xs font-black transition-all border-2 min-h-[44px]',
                 currentLevel === lvl
                   ? 'bg-violet-600 text-white border-violet-600 shadow-md shadow-violet-200'
                   : locked
@@ -212,10 +218,7 @@ export default function MemoryMatch({
       <div className="relative" ref={gridRef}>
         <div
           className="grid gap-2 mx-auto"
-          style={{
-            gridTemplateColumns: `repeat(${levelCfg.cols}, ${cellPx}px)`,
-            width: levelCfg.cols * cellPx + (levelCfg.cols - 1) * 8,
-          }}
+          style={{ gridTemplateColumns: `repeat(${levelCfg.cols}, ${cellPx}px)` }}
         >
           {cards.map((card) => {
             const isJustMatched = justMatched.has(card.id)

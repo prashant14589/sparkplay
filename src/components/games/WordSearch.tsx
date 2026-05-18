@@ -95,7 +95,8 @@ export default function WordSearch({
   const selectingSet = new Set(selecting.map((p) => `${p.row},${p.col}`))
 
   // Cell size — fills container while staying square
-  const maxPx = typeof window !== 'undefined' ? Math.min(window.innerWidth * 0.9 - 32, 380) : 340
+  // Subtract 32px for padding; safe SSR fallback of 311px (375px phone - 64px padding).
+  const maxPx = typeof window !== 'undefined' ? Math.min(window.innerWidth - 32, 380) : 311
   const cellPx = Math.floor(maxPx / gridSize)
 
   function cellKey(pos: CellPos) { return `${pos.row},${pos.col}` }

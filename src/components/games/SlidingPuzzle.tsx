@@ -103,7 +103,8 @@ export default function SlidingPuzzle({ theme, ageGroup = '4-6', childName, onWi
   }, [tiles, won, moves, onWin, size, activeTheme.id, ageGroup])
 
   const emptyPos = tiles.indexOf(0)
-  const maxWidth = typeof window !== 'undefined' ? Math.min(window.innerWidth * 0.85, 400) : 360
+  // Subtract 32px for page padding; cap at 400 on large screens.
+  const maxWidth = typeof window !== 'undefined' ? Math.min(window.innerWidth - 32, 400) : 311
   const cellPx = Math.min(90, Math.floor(maxWidth / size))
   const fmt = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
 

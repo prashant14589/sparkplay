@@ -174,7 +174,7 @@ export default function HomePage() {
                 key={ag.id}
                 onClick={() => selectAge(ag.id)}
                 className={[
-                  'flex flex-col items-center py-2.5 px-1 rounded-2xl border-2 transition-all text-center flex-1 font-bold',
+                  'flex flex-col items-center py-3 px-1 rounded-2xl border-2 transition-all text-center flex-1 font-bold min-h-[56px]',
                   ageGroup === ag.id
                     ? 'bg-violet-600 border-violet-600 text-white shadow-md shadow-violet-200'
                     : 'bg-white border-gray-200 text-gray-500 hover:border-violet-300',

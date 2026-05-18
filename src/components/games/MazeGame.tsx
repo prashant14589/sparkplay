@@ -126,7 +126,9 @@ export default function MazeGame({ theme, ageGroup = '4-6', childName, onWin }: 
     )
   }
 
-  const maxWidth = typeof window !== 'undefined' ? Math.min(window.innerWidth * 0.85, 400) : 360
+  // Subtract 32px for page padding; cap at 400 on large screens.
+  // SSR fallback of 311 = 375px phone minus 64px total padding.
+  const maxWidth = typeof window !== 'undefined' ? Math.min(window.innerWidth - 32, 400) : 311
   const cellPx = Math.min(48, Math.floor(maxWidth / size))
   const borderW = 2
 
