@@ -1,5 +1,5 @@
 export type AgeGroupId = '2-4' | '4-6' | '6-8' | '8-12'
-export type TemplateId = 'memory' | 'quiz' | 'word_search' | 'coloring' | 'maze' | 'puzzle'
+export type TemplateId = 'memory' | 'quiz' | 'word_search' | 'coloring' | 'maze' | 'puzzle' | 'story'
 
 export const AGE_GROUPS = [
   { id: '2-4'  as AgeGroupId, label: '2–4 yrs', emoji: '🧸', desc: 'Toddlers' },
@@ -175,6 +175,14 @@ export const TEMPLATES = [
     desc: 'Rearrange tiles to complete a picture',
     color: 'from-teal-400 to-cyan-600',
     ageGroups: ['6-8', '8-12'] as AgeGroupId[],
+  },
+  {
+    id: 'story' as TemplateId,
+    name: 'Story Quest',
+    emoji: '📖',
+    desc: 'A branching story adventure with your child\'s name',
+    color: 'from-rose-400 to-pink-600',
+    ageGroups: ['2-4', '4-6', '6-8', '8-12'] as AgeGroupId[],
   },
 ]
 

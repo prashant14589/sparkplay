@@ -1,8 +1,13 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { type Theme, type AgeGroupId, THEMES, getLevels } from '@/lib/themes'
+import { recordCompletion, getProgress, type Badge } from '@/lib/progress'
 import HowToPlay from '@/components/games/HowToPlay'
+import LevelComplete from '@/components/LevelComplete'
+import GameEmoji from '@/components/GameEmoji'
+import IllustrationImage from '@/components/IllustrationImage'
+import { getCardIllustration } from '@/lib/illustrations'
 
 type Card = { id: number; emoji: string; isFlipped: boolean; isMatched: boolean }
 
@@ -20,6 +25,7 @@ const TOTAL_LEVELS = 5
 interface Props {
   theme?: Theme
   ageGroup?: AgeGroupId
+  childName?: string
   isAuthenticated?: boolean
   onLevelComplete: (level: number, moves: number) => void
 }
@@ -27,6 +33,7 @@ interface Props {
 export default function MemoryMatch({
   theme,
   ageGroup = '4-6',
+  childName,
   isAuthenticated = false,
   onLevelComplete,
 }: Props) {
@@ -39,23 +46,49 @@ export default function MemoryMatch({
   const [locked, setLocked] = useState(false)
   const [moves, setMoves] = useState(0)
   const [done, setDone] = useState(false)
+  const [seconds, setSeconds] = useState(0)
+  const [timerOn, setTimerOn] = useState(false)
+  const [totalCoins, setTotalCoins] = useState(0)
+  const [justMatched, setJustMatched] = useState<Set<number>>(new Set())
+  const [showToast, setShowToast] = useState(false)
+  const [toastKey, setToastKey] = useState(0)
+  const [completionResult, setCompletionResult] = useState<{
+    stars: number; coins: number; newBadges: Badge[]; streak: number
+  } | null>(null)
+  const gridRef = useRef<HTMLDivElement>(null)
 
   const levelCfg = levels[currentLevel - 1]
   const emojisForLevel = activeTheme.cards.slice(0, levelCfg.pairs)
 
-  // Reset cards whenever theme or level changes (client-only)
+  // Load coins from progress on mount
+  useEffect(() => { setTotalCoins(getProgress().totalCoins) }, [])
+
+  // Reset cards on level / theme change
   useEffect(() => {
     setCards(makeCards(emojisForLevel))
     setSelected([])
     setLocked(false)
     setMoves(0)
+    setSeconds(0)
+    setTimerOn(false)
     setDone(false)
+    setCompletionResult(null)
+    setJustMatched(new Set())
   }, [activeTheme.id, currentLevel, ageGroup]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Timer
+  useEffect(() => {
+    if (!timerOn || done) return
+    const t = setInterval(() => setSeconds((s) => s + 1), 1000)
+    return () => clearInterval(t)
+  }, [timerOn, done])
 
   const handleFlip = useCallback((id: number) => {
     if (locked || done) return
     const card = cards.find((c) => c.id === id)
     if (!card || card.isFlipped || card.isMatched) return
+
+    if (moves === 0) setTimerOn(true)
 
     const next = [...selected, id]
     setCards((prev) => prev.map((c) => (c.id === id ? { ...c, isFlipped: true } : c)))
@@ -69,54 +102,56 @@ export default function MemoryMatch({
     if (a.emoji === b.emoji) {
       setTimeout(() => {
         setCards((prev) => prev.map((c) => (next.includes(c.id) ? { ...c, isMatched: true } : c)))
+        setJustMatched(new Set(next))
+        setShowToast(true)
+        setToastKey((k) => k + 1)
         setSelected([])
         setLocked(false)
+        setTimeout(() => setJustMatched(new Set()), 650)
+        setTimeout(() => setShowToast(false), 1700)
       }, 400)
     } else {
       setTimeout(() => {
         setCards((prev) => prev.map((c) => (next.includes(c.id) ? { ...c, isFlipped: false } : c)))
         setSelected([])
         setLocked(false)
-      }, 900)
+      }, 850)
     }
-  }, [cards, selected, locked, done])
+  }, [cards, selected, locked, done, moves])
 
   useEffect(() => {
-    if (cards.length > 0 && cards.every((c) => c.isMatched) && !done) {
+    // Guard: moves > 0 prevents false trigger on freshly-reset cards
+    if (cards.length > 0 && moves > 0 && cards.every((c) => c.isMatched) && !done) {
       setDone(true)
+      setTimerOn(false)
       onLevelComplete(currentLevel, moves)
+      const r = recordCompletion('memory', activeTheme.id, ageGroup, currentLevel, moves, levelCfg.pairs)
+      setTotalCoins(getProgress().totalCoins)
+      setCompletionResult({ stars: r.stars, coins: r.coinsEarned, newBadges: r.newBadges, streak: r.streak })
     }
-  }, [cards, done, moves, currentLevel, onLevelComplete])
+  }, [cards, done]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  function goToLevel(lvl: number) {
-    setCurrentLevel(lvl)
-    setDone(false)
-  }
-
-  function nextLevel() {
-    if (currentLevel < TOTAL_LEVELS) {
-      setCurrentLevel((l) => l + 1)
-      setDone(false)
-    }
+  function goToLevel(lvl: number) { setCurrentLevel(lvl); setDone(false) }
+  function nextLevel() { if (currentLevel < TOTAL_LEVELS) { setCurrentLevel((l) => l + 1); setDone(false) } }
+  function replay() {
+    setCards(makeCards(emojisForLevel))
+    setMoves(0); setSeconds(0); setTimerOn(false)
+    setDone(false); setCompletionResult(null)
   }
 
   const matched = cards.filter((c) => c.isMatched).length / 2
   const isLevelLocked = (lvl: number) => lvl > 1 && !isAuthenticated
+  // Bigger cells so Twemoji illustrations look great — min 76px, max 92px
+  const cellPx = Math.min(92, Math.max(76, Math.floor(360 / levelCfg.cols)))
+  const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`
 
-  // Cell size — shrinks for larger grids to fit mobile
-  const cellPx = Math.min(72, Math.floor(340 / levelCfg.cols))
-
-  // Skeleton
   if (cards.length === 0) {
     return (
       <div className="select-none">
-        <div className="h-8 bg-gray-100 rounded animate-pulse mb-4" />
-        <div
-          className="grid gap-2"
-          style={{ gridTemplateColumns: `repeat(${levelCfg.cols}, minmax(0,1fr))` }}
-        >
+        <div className="h-8 bg-gray-100 rounded-xl animate-pulse mb-4" />
+        <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${levelCfg.cols}, minmax(0,1fr))` }}>
           {Array.from({ length: levelCfg.pairs * 2 }).map((_, i) => (
-            <div key={i} className="aspect-square rounded-xl bg-gray-100 animate-pulse" />
+            <div key={i} className="aspect-square rounded-2xl bg-gray-100 animate-pulse" />
           ))}
         </div>
       </div>
@@ -127,6 +162,23 @@ export default function MemoryMatch({
     <div className="select-none">
       <HowToPlay gameType="memory" />
 
+      {/* ── Gameplay header bar (matches mockup screen 2) ── */}
+      <div className="flex items-center justify-between mb-4 bg-gray-50 rounded-2xl px-4 py-2.5">
+        <div className="flex items-center gap-1.5 text-sm font-black text-gray-500">
+          <span className="text-base">⏱</span>
+          <span className="font-mono tabular-nums">{fmt(seconds)}</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="flex items-center gap-1 font-black text-yellow-600 text-sm">
+            🪙 {totalCoins}
+          </span>
+          <span className="text-gray-200">|</span>
+          <span className="flex items-center gap-1 font-black text-gray-500 text-sm">
+            🔄 {moves}
+          </span>
+        </div>
+      </div>
+
       {/* Level tabs */}
       <div className="flex gap-1.5 mb-4 flex-wrap">
         {Array.from({ length: TOTAL_LEVELS }, (_, i) => i + 1).map((lvl) => {
@@ -136,91 +188,144 @@ export default function MemoryMatch({
               key={lvl}
               onClick={() => !locked && goToLevel(lvl)}
               disabled={locked}
-              title={locked ? 'Sign up to unlock' : `Level ${lvl} — ${levels[lvl-1].pairs} pairs`}
+              title={locked ? 'Sign up to unlock' : `Level ${lvl} — ${levels[lvl - 1].pairs} pairs`}
               className={[
-                'px-3 py-1 rounded-full text-xs font-semibold transition-all border',
+                'px-3 py-1.5 rounded-full text-xs font-black transition-all border-2 min-h-[36px]',
                 currentLevel === lvl
-                  ? 'bg-violet-600 text-white border-violet-600 shadow-sm'
+                  ? 'bg-violet-600 text-white border-violet-600 shadow-md shadow-violet-200'
                   : locked
-                    ? 'bg-gray-100 text-gray-300 border-gray-200 cursor-not-allowed'
-                    : 'bg-white text-gray-600 border-gray-200 hover:border-violet-400 hover:text-violet-600',
+                    ? 'bg-gray-100 text-gray-300 border-gray-100 cursor-not-allowed'
+                    : 'bg-white text-gray-500 border-gray-200 hover:border-violet-400 hover:text-violet-600',
               ].join(' ')}
             >
               {locked ? '🔒' : `L${lvl}`}
-              {!locked && <span className="ml-1 opacity-60">{levels[lvl-1].pairs}p</span>}
+              {!locked && <span className="ml-1 opacity-60">{levels[lvl - 1].pairs}p</span>}
             </button>
           )
         })}
       </div>
 
-      {/* Stats bar */}
-      <div className="flex justify-between items-center mb-4 text-sm font-medium text-gray-500">
-        <span>{activeTheme.emoji} {activeTheme.name} · Level {currentLevel}</span>
-        <span className="flex gap-3 text-xs">
-          <span>🃏 {matched}/{levelCfg.pairs}</span>
-          <span>🔄 {moves}</span>
-        </span>
-      </div>
-
       {/* Card grid */}
-      <div
-        className="grid gap-2 mx-auto"
-        style={{
-          gridTemplateColumns: `repeat(${levelCfg.cols}, ${cellPx}px)`,
-          width: levelCfg.cols * cellPx + (levelCfg.cols - 1) * 8,
-        }}
-      >
-        {cards.map((card) => (
-          <button
-            key={card.id}
-            onClick={() => handleFlip(card.id)}
-            disabled={card.isMatched || locked}
-            style={{ width: cellPx, height: cellPx, fontSize: cellPx * 0.45 }}
-            className={[
-              'rounded-xl flex items-center justify-center',
-              'transition-all duration-300 border-2',
-              'focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400',
-              card.isMatched
-                ? 'bg-green-50 border-green-300 scale-95 cursor-default'
-                : card.isFlipped
-                  ? 'bg-white border-violet-300 shadow-lg scale-105'
-                  : `bg-gradient-to-br ${activeTheme.color} border-transparent hover:scale-105 hover:shadow-md cursor-pointer active:scale-95`,
-            ].join(' ')}
+      <div className="relative" ref={gridRef}>
+        <div
+          className="grid gap-2 mx-auto"
+          style={{
+            gridTemplateColumns: `repeat(${levelCfg.cols}, ${cellPx}px)`,
+            width: levelCfg.cols * cellPx + (levelCfg.cols - 1) * 8,
+          }}
+        >
+          {cards.map((card) => {
+            const isJustMatched = justMatched.has(card.id)
+            const showFront = card.isFlipped || card.isMatched
+            return (
+              <button
+                key={card.id}
+                onClick={() => handleFlip(card.id)}
+                disabled={card.isMatched || locked}
+                style={{ width: cellPx, height: cellPx }}
+                className={[
+                  'rounded-2xl relative overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400',
+                  'transition-all duration-200',
+                  !card.isMatched && !card.isFlipped ? 'hover:scale-105 hover:shadow-lg active:scale-95 cursor-pointer' : '',
+                  isJustMatched ? 'animate-match-pop animate-match-glow' : '',
+                ].join(' ')}
+              >
+                {/* ── Card back — purple gradient + CSS sparkle pattern ── */}
+                <div
+                  className={[
+                    'absolute inset-0 rounded-2xl flex items-center justify-center',
+                    'transition-all duration-300',
+                    showFront ? 'opacity-0 scale-90 pointer-events-none' : 'opacity-100 scale-100',
+                  ].join(' ')}
+                  style={{
+                    background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 50%, #5b21b6 100%)',
+                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.2)',
+                  }}
+                >
+                  {/* Repeating sparkle dots pattern */}
+                  <div
+                    className="absolute inset-0 rounded-2xl opacity-20"
+                    style={{
+                      backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
+                      backgroundSize: `${cellPx * 0.28}px ${cellPx * 0.28}px`,
+                    }}
+                  />
+                  {/* Centred sparkle star */}
+                  <span style={{ fontSize: cellPx * 0.38, filter: 'drop-shadow(0 2px 4px rgba(0,0,0,.3))', zIndex: 1 }}>
+                    ✦
+                  </span>
+                </div>
+
+                {/* ── Card front — white with commissioned illustration ── */}
+                <div
+                  className={[
+                    'absolute inset-0 rounded-2xl flex items-center justify-center border-2 shadow-lg',
+                    'transition-all duration-300',
+                    card.isMatched
+                      ? 'bg-gradient-to-br from-green-100 to-emerald-200 border-green-300'
+                      : 'bg-white border-violet-100',
+                    showFront ? 'opacity-100 scale-100' : 'opacity-0 scale-110 pointer-events-none',
+                  ].join(' ')}
+                >
+                  {/* emojiIndex tracks position in theme.cards array for illustration lookup */}
+                  <IllustrationImage
+                    src={getCardIllustration(activeTheme.id, activeTheme.cards.indexOf(card.emoji))}
+                    alt={card.emoji}
+                    size={Math.floor(cellPx * 0.72)}
+                    fallbackEmoji={card.emoji}
+                    skeleton
+                  />
+                </div>
+              </button>
+            )
+          })}
+        </div>
+
+        {/* MATCH! toast */}
+        {showToast && (
+          <div
+            key={toastKey}
+            className="animate-match-toast pointer-events-none absolute z-20"
+            style={{ left: '50%', top: '50%' }}
           >
-            <span className={`transition-all duration-200 ${card.isFlipped || card.isMatched ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}>
-              {card.emoji}
-            </span>
-          </button>
-        ))}
+            <div className="bg-white rounded-2xl px-5 py-2.5 shadow-2xl border-4 border-yellow-400 whitespace-nowrap flex items-center gap-2">
+              <GameEmoji emoji="🎉" size={28} />
+              <span className="font-black text-violet-700 text-xl">MATCH!</span>
+              <GameEmoji emoji="✨" size={28} />
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Level complete banner */}
-      {done && (
-        <div className="mt-5 rounded-2xl bg-green-50 border-2 border-green-300 p-4 text-center">
-          <p className="text-2xl mb-1">{currentLevel === TOTAL_LEVELS ? '🏆' : '🎉'}</p>
-          <p className="font-bold text-green-800">
-            {currentLevel === TOTAL_LEVELS
-              ? `All ${TOTAL_LEVELS} levels complete! You're a champion!`
-              : `Level ${currentLevel} complete!`}
-          </p>
-          <p className="text-sm text-green-600 mt-0.5">Finished in {moves} moves</p>
-          <div className="flex gap-2 justify-center mt-3">
-            <button
-              onClick={() => { setCards(makeCards(emojisForLevel)); setMoves(0); setDone(false) }}
-              className="rounded-lg border border-green-400 px-3 py-1.5 text-sm text-green-700 font-semibold hover:bg-green-100"
-            >
-              Replay
-            </button>
-            {currentLevel < TOTAL_LEVELS && (
-              <button
-                onClick={nextLevel}
-                className="rounded-lg bg-green-600 px-4 py-1.5 text-sm text-white font-semibold hover:bg-green-700"
-              >
-                Level {currentLevel + 1} →
-              </button>
-            )}
-          </div>
+      {/* Pairs progress bar (matches mockup bottom bar) */}
+      <div className="flex items-center gap-3 mt-4 px-1">
+        <span className="text-xs font-black text-gray-400 whitespace-nowrap">
+          Pairs: {matched}/{levelCfg.pairs}
+        </span>
+        <div className="flex-1 h-2.5 bg-gray-100 rounded-full overflow-hidden">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-violet-500 to-purple-600 transition-all duration-500"
+            style={{ width: `${(matched / levelCfg.pairs) * 100}%` }}
+          />
         </div>
+        <span className="text-lg">⭐</span>
+      </div>
+
+      {/* Level complete full-screen overlay */}
+      {done && completionResult && (
+        <LevelComplete
+          level={currentLevel}
+          totalLevels={TOTAL_LEVELS}
+          stars={completionResult.stars}
+          coins={completionResult.coins}
+          moves={moves}
+          childName={childName}
+          newBadges={completionResult.newBadges}
+          streak={completionResult.streak}
+          themeEmoji={activeTheme.cards[0]} themeId={activeTheme.id}
+          onReplay={replay}
+          onNext={currentLevel < TOTAL_LEVELS ? nextLevel : undefined}
+        />
       )}
     </div>
   )

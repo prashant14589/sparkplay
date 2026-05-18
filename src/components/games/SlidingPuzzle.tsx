@@ -2,17 +2,15 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { type Theme, THEMES } from '@/lib/themes'
+import { recordCompletion, type Badge } from '@/lib/progress'
 import HowToPlay from './HowToPlay'
+import LevelComplete from '@/components/LevelComplete'
 
-// Solved state: [1, 2, 3, ..., N²-1, 0]
-// tiles[pos] = tileId | tileId 0 = empty, tileId N = emojis[N-1]
-// Empty is at the LAST position when solved (bottom-right)
 const PUZZLE_SIZE: Record<string, number> = {
   '2-4': 3, '4-6': 3, '6-8': 4, '8-12': 4,
 }
 
 function solvedTiles(size: number): number[] {
-  // [1, 2, ..., N²-1, 0]  — empty last
   return Array.from({ length: size * size }, (_, i) => (i + 1) % (size * size))
 }
 
@@ -22,10 +20,8 @@ function isSolved(tiles: number[]): boolean {
 }
 
 function generatePuzzle(size: number): number[] {
-  // Start from solved state, make random valid moves → guaranteed solvable
   const tiles = solvedTiles(size)
-  let emptyPos = size * size - 1 // empty starts at last position ✓
-
+  let emptyPos = size * size - 1
   for (let i = 0; i < size * size * 40; i++) {
     const row = Math.floor(emptyPos / size)
     const col = emptyPos % size
@@ -34,7 +30,6 @@ function generatePuzzle(size: number): number[] {
     if (row < size - 1) neighbors.push(emptyPos + size)
     if (col > 0) neighbors.push(emptyPos - 1)
     if (col < size - 1) neighbors.push(emptyPos + 1)
-
     const next = neighbors[Math.floor(Math.random() * neighbors.length)]
     ;[tiles[emptyPos], tiles[next]] = [tiles[next], tiles[emptyPos]]
     emptyPos = next
@@ -65,6 +60,9 @@ export default function SlidingPuzzle({ theme, ageGroup = '4-6', childName, onWi
   const [won, setWon] = useState(false)
   const [seconds, setSeconds] = useState(0)
   const [running, setRunning] = useState(false)
+  const [completionResult, setCompletionResult] = useState<{
+    stars: number; coins: number; newBadges: Badge[]; streak: number
+  } | null>(null)
 
   useEffect(() => { reset() }, [size, activeTheme.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -76,7 +74,7 @@ export default function SlidingPuzzle({ theme, ageGroup = '4-6', childName, onWi
 
   function reset() {
     setTiles(generatePuzzle(size))
-    setMoves(0); setSeconds(0); setRunning(false); setWon(false)
+    setMoves(0); setSeconds(0); setRunning(false); setWon(false); setCompletionResult(null)
   }
 
   const slide = useCallback((tilePos: number) => {
@@ -96,9 +94,13 @@ export default function SlidingPuzzle({ theme, ageGroup = '4-6', childName, onWi
 
   useEffect(() => {
     if (tiles.length > 0 && isSolved(tiles) && !won && moves > 0) {
-      setWon(true); setRunning(false); onWin?.()
+      setWon(true); setRunning(false)
+      onWin?.()
+      const tileCount = size * size - 1   // unit for puzzle star thresholds
+      const r = recordCompletion('puzzle', activeTheme.id, ageGroup, 1, moves, tileCount)
+      setCompletionResult({ stars: r.stars, coins: r.coinsEarned, newBadges: r.newBadges, streak: r.streak })
     }
-  }, [tiles, won, moves, onWin])
+  }, [tiles, won, moves, onWin, size, activeTheme.id, ageGroup])
 
   const emptyPos = tiles.indexOf(0)
   const maxWidth = typeof window !== 'undefined' ? Math.min(window.innerWidth * 0.85, 400) : 360
@@ -113,9 +115,11 @@ export default function SlidingPuzzle({ theme, ageGroup = '4-6', childName, onWi
     <div className="select-none flex flex-col items-center gap-4">
       <HowToPlay gameType="puzzle" />
 
-      {/* Stats */}
       <div className="flex justify-between w-full text-sm text-gray-500">
-        <span>{activeTheme.emoji} {activeTheme.name} · {size}×{size}</span>
+        <span>
+          {activeTheme.emoji} {activeTheme.name} · {size}×{size}
+          {childName?.trim() ? ` · ${childName.trim()}` : ''}
+        </span>
         <span className="flex gap-3">
           <span>🔄 {moves} moves</span>
           <span>⏱ {fmt(seconds)}</span>
@@ -128,8 +132,7 @@ export default function SlidingPuzzle({ theme, ageGroup = '4-6', childName, onWi
         style={{ width: size * cellPx, height: size * cellPx }}
       >
         {tiles.map((tileId, pos) => {
-          if (tileId === 0) return null // empty cell — leave blank
-          // Correct when tileId === pos + 1 (solved = [1,2,...,N²-1,0])
+          if (tileId === 0) return null
           const isCorrect = tileId === pos + 1
           const row = Math.floor(pos / size)
           const col = pos % size
@@ -166,7 +169,7 @@ export default function SlidingPuzzle({ theme, ageGroup = '4-6', childName, onWi
         })}
       </div>
 
-      {/* Goal + legend */}
+      {/* Goal legend */}
       {!won && (
         <div className="flex items-center gap-3 text-xs text-gray-500 bg-gray-50 rounded-xl px-4 py-2 w-full">
           <div>
@@ -185,18 +188,20 @@ export default function SlidingPuzzle({ theme, ageGroup = '4-6', childName, onWi
         </div>
       )}
 
-      {/* Win banner */}
-      {won && (
-        <div className="rounded-2xl bg-green-50 border-2 border-green-300 px-6 py-4 text-center w-full">
-          <p className="text-3xl mb-1">🏆</p>
-          <p className="font-bold text-green-800 text-lg">
-            {childName ? `${childName} solved it!` : 'Puzzle solved!'}
-          </p>
-          <p className="text-sm text-green-600 mt-0.5">{moves} moves · {fmt(seconds)}</p>
-          <button onClick={reset} className="mt-3 rounded-lg bg-green-600 px-5 py-2 text-sm text-white font-semibold hover:bg-green-700">
-            New puzzle →
-          </button>
-        </div>
+      {/* Win — LevelComplete */}
+      {won && completionResult && (
+        <LevelComplete
+          level={1}
+          totalLevels={1}
+          stars={completionResult.stars}
+          coins={completionResult.coins}
+          moves={moves}
+          childName={childName}
+          newBadges={completionResult.newBadges}
+          streak={completionResult.streak}
+          themeEmoji={activeTheme.cards[0]} themeId={activeTheme.id}
+          onReplay={reset}
+        />
       )}
 
       {!won && (

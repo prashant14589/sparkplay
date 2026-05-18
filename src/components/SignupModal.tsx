@@ -13,50 +13,54 @@ export default function SignupModal({ moves, onClose }: Props) {
     const supabase = createClient()
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: {
-        // After OAuth, come back to the landing page (not dashboard)
-        redirectTo: `${window.location.origin}/auth/callback?next=/`,
-      },
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=/` },
     })
   }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-      <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-sm p-8 text-center">
-        <div className="text-6xl mb-3">🎉</div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-1">Level 1 Complete!</h2>
-        <p className="text-gray-500 mb-1">
-          You matched all pairs in{' '}
-          <span className="font-semibold text-gray-700">{moves} moves</span>
-        </p>
-        <p className="text-sm text-gray-400 mb-6">
-          Sign up free to unlock <strong>Level 2</strong> and create your own personalised games!
-        </p>
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden animate-bounce-in">
 
-        <button
-          onClick={signInWithGoogle}
-          className="w-full flex items-center justify-center gap-3 rounded-xl border-2 border-gray-200 px-4 py-3 text-gray-700 font-semibold hover:bg-gray-50 hover:border-gray-300 transition-all mb-3"
-        >
-          <GoogleIcon />
-          Continue with Google
-        </button>
+        {/* Gradient header */}
+        <div className="bg-gradient-to-br from-violet-600 via-purple-600 to-fuchsia-700 px-6 pt-8 pb-10 text-center text-white">
+          <span className="text-6xl block mb-3">🎉</span>
+          <h2 className="text-2xl font-black mb-1">Level 1 Complete!</h2>
+          <p className="text-white/80 text-sm font-medium">
+            Finished in <span className="font-black text-yellow-300">{moves} moves</span>
+          </p>
+        </div>
 
-        <Link
-          href="/signup"
-          className="block w-full rounded-xl bg-blue-600 px-4 py-3 text-white font-semibold hover:bg-blue-700 transition-colors mb-4"
-        >
-          Sign up with Email
-        </Link>
+        {/* Bump overlap effect */}
+        <div className="relative -mt-4 bg-white rounded-t-3xl px-6 pt-5 pb-6">
+          <p className="text-gray-600 text-sm text-center mb-5 font-medium">
+            Sign up free to unlock <strong className="text-violet-600">Levels 2–5</strong> and create your own personalised games!
+          </p>
 
-        <p className="text-xs text-gray-400">
-          Already have an account?{' '}
-          <Link href="/login" className="text-blue-600 hover:underline">Sign in</Link>
-        </p>
+          <button
+            onClick={signInWithGoogle}
+            className="w-full flex items-center justify-center gap-3 rounded-2xl border-2 border-gray-200 px-4 py-3 text-gray-700 font-bold hover:bg-gray-50 hover:border-violet-300 transition-all mb-3 min-h-[52px]"
+          >
+            <GoogleIcon />
+            Continue with Google
+          </button>
+
+          <Link
+            href="/signup"
+            className="block w-full rounded-2xl bg-gradient-to-r from-violet-600 to-pink-600 px-4 py-3.5 text-white font-black text-center hover:opacity-90 shadow-lg shadow-violet-200 mb-4 min-h-[52px] flex items-center justify-center"
+          >
+            Sign up with Email →
+          </Link>
+
+          <p className="text-xs text-gray-400 text-center">
+            Already have an account?{' '}
+            <Link href="/login" className="text-violet-600 font-semibold hover:underline">Sign in</Link>
+          </p>
+        </div>
 
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-300 hover:text-gray-500 text-xl leading-none"
+          className="absolute top-4 right-4 text-white/60 hover:text-white text-xl leading-none font-bold"
           aria-label="Close"
         >
           ✕

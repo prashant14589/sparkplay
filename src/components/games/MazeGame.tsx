@@ -2,7 +2,10 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { type Theme, THEMES } from '@/lib/themes'
+import { recordCompletion, type Badge } from '@/lib/progress'
 import HowToPlay from './HowToPlay'
+import LevelComplete from '@/components/LevelComplete'
+import GameEmoji from '@/components/GameEmoji'
 
 type Cell = { n: boolean; e: boolean; s: boolean; w: boolean }
 type Pos = { r: number; c: number }
@@ -55,21 +58,24 @@ export default function MazeGame({ theme, ageGroup = '4-6', childName, onWin }: 
   const [pos, setPos] = useState<Pos>({ r: 0, c: 0 })
   const [won, setWon] = useState(false)
   const [moves, setMoves] = useState(0)
+  const [completionResult, setCompletionResult] = useState<{
+    stars: number; coins: number; newBadges: Badge[]; streak: number
+  } | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  // Generate maze client-side only (Math.random)
   useEffect(() => {
     setMaze(generateMaze(size))
     setPos({ r: 0, c: 0 })
     setWon(false)
     setMoves(0)
+    setCompletionResult(null)
   }, [size, activeTheme.id])
 
   const move = useCallback((dir: 'n' | 'e' | 's' | 'w') => {
     if (!maze || won) return
     setPos((p) => {
       const cell = maze[p.r][p.c]
-      if (cell[dir]) return p // wall blocks
+      if (cell[dir]) return p
       const next = {
         n: { r: p.r - 1, c: p.c },
         e: { r: p.r,     c: p.c + 1 },
@@ -80,12 +86,18 @@ export default function MazeGame({ theme, ageGroup = '4-6', childName, onWin }: 
       if (next.r === size - 1 && next.c === size - 1) {
         setWon(true)
         onWin?.()
+        setMoves((m) => {
+          const finalMoves = m + 1
+          // pairs equivalent = size for scoring purposes
+          const r = recordCompletion('maze', activeTheme.id, ageGroup, 1, finalMoves, size)
+          setCompletionResult({ stars: r.stars, coins: r.coinsEarned, newBadges: r.newBadges, streak: r.streak })
+          return finalMoves
+        })
       }
       return next
     })
-  }, [maze, won, size, onWin])
+  }, [maze, won, size, onWin, activeTheme.id, ageGroup])
 
-  // Keyboard controls
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const map: Record<string, 'n' | 'e' | 's' | 'w'> = {
@@ -103,9 +115,9 @@ export default function MazeGame({ theme, ageGroup = '4-6', childName, onWin }: 
     setPos({ r: 0, c: 0 })
     setWon(false)
     setMoves(0)
+    setCompletionResult(null)
   }
 
-  // Skeleton while maze generates
   if (!maze) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -114,7 +126,6 @@ export default function MazeGame({ theme, ageGroup = '4-6', childName, onWin }: 
     )
   }
 
-  // Cell size — fit in container (max ~400px wide)
   const maxWidth = typeof window !== 'undefined' ? Math.min(window.innerWidth * 0.85, 400) : 360
   const cellPx = Math.min(48, Math.floor(maxWidth / size))
   const borderW = 2
@@ -122,9 +133,12 @@ export default function MazeGame({ theme, ageGroup = '4-6', childName, onWin }: 
   return (
     <div className="select-none flex flex-col items-center gap-4" ref={containerRef}>
       <div className="w-full"><HowToPlay gameType="maze" /></div>
-      {/* Header */}
+
       <div className="flex items-center justify-between w-full text-sm text-gray-500">
-        <span>{activeTheme.emoji} {activeTheme.name} Maze · {size}×{size}</span>
+        <span>
+          {activeTheme.emoji} {activeTheme.name} · {size}×{size}
+          {childName?.trim() ? ` · ${childName.trim()}` : ''}
+        </span>
         <span>🔄 {moves} moves</span>
       </div>
 
@@ -137,7 +151,6 @@ export default function MazeGame({ theme, ageGroup = '4-6', childName, onWin }: 
           row.map((cell, c) => {
             const isPlayer = pos.r === r && pos.c === c
             const isGoal = r === size - 1 && c === size - 1 && !isPlayer
-
             return (
               <div
                 key={`${r}-${c}`}
@@ -158,32 +171,31 @@ export default function MazeGame({ theme, ageGroup = '4-6', childName, onWin }: 
                   zIndex: isPlayer ? 2 : 1,
                 }}
               >
-                {isPlayer && <span style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,.3))' }}>{playerEmoji}</span>}
-                {isGoal && goalEmoji}
+                {isPlayer && <GameEmoji emoji={playerEmoji} size={Math.floor(cellPx * 0.75)} />}
+                {isGoal && <GameEmoji emoji={goalEmoji} size={Math.floor(cellPx * 0.75)} />}
               </div>
             )
           })
         )}
       </div>
 
-      {/* Win banner */}
-      {won && (
-        <div className="rounded-2xl bg-green-50 border-2 border-green-300 px-6 py-4 text-center animate-bounce-in">
-          <p className="text-2xl mb-1">🎉</p>
-          <p className="font-bold text-green-800">
-            {childName ? `${childName} solved it!` : 'You solved it!'}
-          </p>
-          <p className="text-sm text-green-600 mt-1">Finished in {moves} moves</p>
-          <button
-            onClick={restart}
-            className="mt-3 rounded-lg bg-green-600 px-4 py-1.5 text-sm text-white font-semibold hover:bg-green-700"
-          >
-            New maze →
-          </button>
-        </div>
+      {/* Win banner using LevelComplete */}
+      {won && completionResult && (
+        <LevelComplete
+          level={1}
+          totalLevels={1}
+          stars={completionResult.stars}
+          coins={completionResult.coins}
+          moves={moves}
+          childName={childName}
+          newBadges={completionResult.newBadges}
+          streak={completionResult.streak}
+          themeEmoji={activeTheme.cards[0]} themeId={activeTheme.id}
+          onReplay={restart}
+        />
       )}
 
-      {/* On-screen D-pad */}
+      {/* D-pad */}
       <div className="grid grid-cols-3 gap-1 mt-1">
         {[
           [null, { label: '↑', dir: 'n' as const }, null],
@@ -206,7 +218,9 @@ export default function MazeGame({ theme, ageGroup = '4-6', childName, onWin }: 
         )}
       </div>
 
-      <p className="text-xs text-gray-400">Arrow keys or buttons to move {playerEmoji} to {goalEmoji}</p>
+      <p className="text-xs text-gray-400 flex items-center gap-1 justify-center">
+        Arrow keys or buttons to move <GameEmoji emoji={playerEmoji} size={18} /> to <GameEmoji emoji={goalEmoji} size={18} />
+      </p>
     </div>
   )
 }
