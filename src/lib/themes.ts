@@ -1,5 +1,5 @@
 export type AgeGroupId = '2-4' | '4-6' | '6-8' | '8-12'
-export type TemplateId = 'memory' | 'quiz' | 'word_search' | 'coloring' | 'maze' | 'puzzle' | 'story' | 'puzzle_maker'
+export type TemplateId = 'memory' | 'quiz' | 'word_search' | 'coloring' | 'maze' | 'puzzle' | 'story' | 'puzzle_maker' | 'number_merge'
 
 export const AGE_GROUPS = [
   { id: '2-4'  as AgeGroupId, label: '2–4 yrs', emoji: '🧸', desc: 'Toddlers' },
@@ -191,6 +191,14 @@ export const TEMPLATES = [
     desc: 'A branching story adventure with your child\'s name',
     color: 'from-rose-400 to-pink-600',
     ageGroups: ['2-4', '4-6', '6-8', '8-12'] as AgeGroupId[],
+  },
+  {
+    id: 'number_merge' as TemplateId,
+    name: 'Number Merge',
+    emoji: '2️⃣',
+    desc: 'Swipe to merge tiles and reach 2048',
+    color: 'from-slate-600 to-gray-800',
+    ageGroups: ['8-12'] as AgeGroupId[],
   },
 ]
 

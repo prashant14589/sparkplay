@@ -144,7 +144,7 @@ export default function MazeGame({ theme, ageGroup = '4-6', childName, onWin }: 
       <div className="w-full"><HowToPlay gameType="maze" /></div>
 
       <div className="flex items-center justify-between w-full text-sm text-gray-500">
-        <span className={`text-[10px] font-black px-2.5 py-1 rounded-full border ${tier.color}`}>
+        <span className={`text-xs font-black px-2.5 py-1 rounded-full border ${tier.color}`}>
           {tier.emoji} {tier.label}
         </span>
         <span>🔄 {moves} moves · {size}×{size}</span>

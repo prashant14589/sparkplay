@@ -13,6 +13,7 @@ import QuizGame from '@/components/games/QuizGame'
 import WordSearch from '@/components/games/WordSearch'
 import PuzzleMaker from '@/components/games/PuzzleMaker'
 import PaywallGate from '@/components/PaywallGate'
+import NumberMerge from '@/components/games/NumberMerge'
 import { recordGameForQuest } from '@/lib/quests'
 
 function GamePreview({ game }: { game: Game }) {
@@ -61,6 +62,14 @@ function GamePreview({ game }: { game: Game }) {
         <PaywallGate featureName="Puzzle Maker" featureEmoji="🧩">
           <div className="w-full max-w-sm mx-auto">
             <PuzzleMaker childName={childName} ageGroup={ageGroup} />
+          </div>
+        </PaywallGate>
+      )
+    case 'number_merge':
+      return (
+        <PaywallGate featureName="Number Merge (2048)" featureEmoji="2️⃣">
+          <div className="w-full max-w-sm mx-auto">
+            <NumberMerge childName={childName} onWin={() => recordGameForQuest('number_merge')} />
           </div>
         </PaywallGate>
       )
@@ -269,7 +278,7 @@ export default function EditGamePage() {
 }
 
 function templateEmoji(type: string) {
-  const map: Record<string, string> = { quiz: '❓', word_search: '🔤', coloring: '🎨', puzzle: '🧩', story: '📖' }
+  const map: Record<string, string> = { quiz: '❓', word_search: '🔤', coloring: '🎨', puzzle: '🧩', story: '📖', number_merge: '2️⃣' }
   return map[type] ?? '🎮'
 }
 

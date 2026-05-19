@@ -198,7 +198,7 @@ export default function WordSearch({
 
       {/* Stats bar with tier badge */}
       <div className="flex items-center justify-between text-sm font-black text-gray-500">
-        <span className={`text-[10px] font-black px-2.5 py-1 rounded-full border ${tier.color}`}>
+        <span className={`text-xs font-black px-2.5 py-1 rounded-full border ${tier.color}`}>
           {tier.emoji} {tier.label}
         </span>
         <span className="bg-violet-50 border border-violet-100 rounded-full px-3 py-0.5 text-violet-600">

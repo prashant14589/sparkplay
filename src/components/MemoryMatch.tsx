@@ -180,7 +180,7 @@ export default function MemoryMatch({
 
       {/* Age tier badge */}
       <div className="flex items-center justify-between mb-2">
-        <span className={`text-[10px] font-black px-2.5 py-1 rounded-full border ${tier.color}`}>
+        <span className={`text-xs font-black px-2.5 py-1 rounded-full border ${tier.color}`}>
           {tier.emoji} {tier.label}
         </span>
         <span className="text-xs text-gray-400 font-semibold">Level {currentLevel}/{TOTAL_LEVELS}</span>

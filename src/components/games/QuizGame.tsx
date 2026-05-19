@@ -136,7 +136,7 @@ export default function QuizGame({
     <div className="select-none flex flex-col gap-5">
 
       {/* Age tier badge */}
-      <span className={`self-start text-[10px] font-black px-2.5 py-1 rounded-full border ${tier.color}`}>
+      <span className={`self-start text-xs font-black px-2.5 py-1 rounded-full border ${tier.color}`}>
         {tier.emoji} {tier.label}
       </span>
 
@@ -198,7 +198,7 @@ export default function QuizGame({
                 key={idx}
                 onClick={() => handleChoice(idx)}
                 disabled={chosen !== null}
-                className={`w-full rounded-2xl border-2 px-5 py-3.5 text-left font-black text-sm transition-all duration-200 min-h-[52px] flex items-center gap-3 ${style}`}
+                className={`w-full rounded-2xl border-2 px-5 py-3.5 text-left font-black text-base transition-all duration-200 min-h-[56px] flex items-center gap-3 ${style}`}
               >
                 <span className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-xs font-black flex-shrink-0">
                   {String.fromCharCode(65 + idx)}
