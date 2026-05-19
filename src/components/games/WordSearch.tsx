@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { type Theme, THEMES } from '@/lib/themes'
+import { type Theme, THEMES, getAgeTier } from '@/lib/themes'
 import { Sounds } from '@/lib/sounds'
 import { recordGameForQuest } from '@/lib/quests'
 import {
@@ -71,9 +71,10 @@ export default function WordSearch({
 
   // Build grid on mount / level / theme change
   useEffect(() => {
-    const allWords = getWordsForTheme(activeTheme.id)
+    const allWords = getWordsForTheme(activeTheme.id, ageGroup)
+    const allowDiagonals = ageGroup !== '4-6'
     const wordPool = [...allWords].sort(() => Math.random() - 0.5).slice(0, wordCount + 4)
-    const { grid: g, placed: p } = buildGrid(wordPool, gridSize)
+    const { grid: g, placed: p } = buildGrid(wordPool, gridSize, allowDiagonals)
     const actualWords = p.slice(0, wordCount)
     setGrid(g)
     setPlaced(actualWords)
@@ -151,9 +152,10 @@ export default function WordSearch({
   }, [isPointerDown, selecting, grid, placed, found, moves, activeTheme.id, ageGroup, level, onLevelComplete])
 
   function replay() {
-    const allWords = getWordsForTheme(activeTheme.id)
+    const allWords = getWordsForTheme(activeTheme.id, ageGroup)
+    const allowDiagonals = ageGroup !== '4-6'
     const wordPool = [...allWords].sort(() => Math.random() - 0.5).slice(0, wordCount + 4)
-    const { grid: g, placed: p } = buildGrid(wordPool, gridSize)
+    const { grid: g, placed: p } = buildGrid(wordPool, gridSize, allowDiagonals)
     setGrid(g)
     setPlaced(p.slice(0, wordCount))
     setFound(new Set())
@@ -188,13 +190,17 @@ export default function WordSearch({
     )
   }
 
+  const tier = getAgeTier(ageGroup)
+
   return (
     <div className="select-none flex flex-col gap-4">
       <HowToPlay gameType="word_search" />
 
-      {/* Stats bar */}
+      {/* Stats bar with tier badge */}
       <div className="flex items-center justify-between text-sm font-black text-gray-500">
-        <span>{activeTheme.emoji} {activeTheme.name}{childName?.trim() ? ` · ${childName}` : ''}</span>
+        <span className={`text-[10px] font-black px-2.5 py-1 rounded-full border ${tier.color}`}>
+          {tier.emoji} {tier.label}
+        </span>
         <span className="bg-violet-50 border border-violet-100 rounded-full px-3 py-0.5 text-violet-600">
           Found {found.size}/{placed.length}
         </span>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { type Theme, THEMES } from '@/lib/themes'
+import { type Theme, THEMES, getAgeTier } from '@/lib/themes'
 import { recordCompletion, type Badge } from '@/lib/progress'
 import { Sounds } from '@/lib/sounds'
 import HowToPlay from './HowToPlay'
@@ -137,16 +137,17 @@ export default function MazeGame({ theme, ageGroup = '4-6', childName, onWin }: 
   const cellPx = Math.min(48, Math.floor(maxWidth / size))
   const borderW = 2
 
+  const tier = getAgeTier(ageGroup)
+
   return (
     <div className="select-none flex flex-col items-center gap-4" ref={containerRef}>
       <div className="w-full"><HowToPlay gameType="maze" /></div>
 
       <div className="flex items-center justify-between w-full text-sm text-gray-500">
-        <span>
-          {activeTheme.emoji} {activeTheme.name} · {size}×{size}
-          {childName?.trim() ? ` · ${childName.trim()}` : ''}
+        <span className={`text-[10px] font-black px-2.5 py-1 rounded-full border ${tier.color}`}>
+          {tier.emoji} {tier.label}
         </span>
-        <span>🔄 {moves} moves</span>
+        <span>🔄 {moves} moves · {size}×{size}</span>
       </div>
 
       {/* Maze grid */}

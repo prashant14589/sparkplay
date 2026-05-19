@@ -2,12 +2,14 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react'
 import {
-  PUZZLE_SCENARIOS,
+  getScenariosForAge,
+  DEFAULT_DIFFICULTY_FOR_AGE,
   DIFFICULTY_GRID,
   createPieces,
   shufflePieces,
   isPieceCorrect,
   getCacheKey,
+  type PuzzleScenario,
   type PuzzlePiece,
   type DifficultyLevel,
 } from '@/lib/puzzleGame'
@@ -21,6 +23,7 @@ const IMG_H = 1024
 
 interface Props {
   childName?: string
+  ageGroup?: string
   onComplete?: () => void
 }
 
@@ -30,10 +33,13 @@ interface BoardPiece extends PuzzlePiece {
   placed: boolean   // true once correctly snapped to its slot
 }
 
-export default function PuzzleMaker({ childName, onComplete }: Props) {
+export default function PuzzleMaker({ childName, ageGroup = '4-6', onComplete }: Props) {
+  const scenarios = getScenariosForAge(ageGroup)
+  const defaultDifficulty = DEFAULT_DIFFICULTY_FOR_AGE[ageGroup] ?? '6'
+
   const [gameState, setGameState]       = useState<GameState>('picker')
-  const [selectedScenario, setSelectedScenario] = useState<typeof PUZZLE_SCENARIOS[0] | null>(null)
-  const [difficulty, setDifficulty]     = useState<DifficultyLevel>('6')
+  const [selectedScenario, setSelectedScenario] = useState<PuzzleScenario | null>(null)
+  const [difficulty, setDifficulty]     = useState<DifficultyLevel>(defaultDifficulty)
   const [imageUrl, setImageUrl]         = useState<string | null>(null)
   const [pieces, setPieces]             = useState<BoardPiece[]>([])
   const [dragId, setDragId]             = useState<number | null>(null)
@@ -49,7 +55,7 @@ export default function PuzzleMaker({ childName, onComplete }: Props) {
 
   // ── Generate puzzle ────────────────────────────────────────────────────────
 
-  async function generatePuzzle(scenario: typeof PUZZLE_SCENARIOS[0]) {
+  async function generatePuzzle(scenario: PuzzleScenario) {
     setSelectedScenario(scenario)
     setGameState('generating')
     setErrorMsg('')
@@ -84,7 +90,7 @@ export default function PuzzleMaker({ childName, onComplete }: Props) {
     }
   }
 
-  function startGame(url: string, scenario: typeof PUZZLE_SCENARIOS[0]) {
+  function startGame(url: string, scenario: PuzzleScenario) {
     setImageUrl(url)
     const rawPieces = createPieces(cols, rows, IMG_W, IMG_H)
     const shuffled = shufflePieces(rawPieces).map(p => ({ ...p, placed: false }))
@@ -182,27 +188,29 @@ export default function PuzzleMaker({ childName, onComplete }: Props) {
           </p>
         </div>
 
-        {/* Difficulty selector */}
-        <div className="flex gap-2 justify-center">
-          {(['6', '12', '24'] as DifficultyLevel[]).map(d => (
-            <button
-              key={d}
-              onClick={() => setDifficulty(d)}
-              className={[
-                'px-4 py-2 rounded-2xl border-2 font-black text-sm transition-all min-h-[44px]',
-                difficulty === d
-                  ? 'bg-violet-600 text-white border-violet-600 shadow-md'
-                  : 'bg-white text-gray-600 border-gray-200 hover:border-violet-300',
-              ].join(' ')}
-            >
-              {d} pieces
-            </button>
-          ))}
-        </div>
+        {/* Difficulty selector — hidden for 2-4 (always 6 pieces) */}
+        {ageGroup !== '2-4' && (
+          <div className="flex gap-2 justify-center">
+            {(['6', '12', '24'] as DifficultyLevel[]).map(d => (
+              <button
+                key={d}
+                onClick={() => setDifficulty(d)}
+                className={[
+                  'px-4 py-2 rounded-2xl border-2 font-black text-sm transition-all min-h-[44px]',
+                  difficulty === d
+                    ? 'bg-violet-600 text-white border-violet-600 shadow-md'
+                    : 'bg-white text-gray-600 border-gray-200 hover:border-violet-300',
+                ].join(' ')}
+              >
+                {d} pieces
+              </button>
+            ))}
+          </div>
+        )}
 
-        {/* Scenario grid */}
+        {/* Scenario grid — age-filtered */}
         <div className="grid grid-cols-2 gap-3">
-          {PUZZLE_SCENARIOS.map(scenario => (
+          {scenarios.map(scenario => (
             <button
               key={scenario.id}
               onClick={() => generatePuzzle(scenario)}

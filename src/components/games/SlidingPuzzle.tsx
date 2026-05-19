@@ -8,7 +8,7 @@ import HowToPlay from './HowToPlay'
 import LevelComplete from '@/components/LevelComplete'
 
 const PUZZLE_SIZE: Record<string, number> = {
-  '2-4': 3, '4-6': 3, '6-8': 4, '8-12': 4,
+  '2-4': 3, '4-6': 3, '6-8': 4, '8-12': 5,
 }
 
 function solvedTiles(size: number): number[] {

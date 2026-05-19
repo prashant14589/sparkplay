@@ -1,11 +1,11 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { type Theme, THEMES } from '@/lib/themes'
+import { type Theme, THEMES, getAgeTier } from '@/lib/themes'
 import { Sounds } from '@/lib/sounds'
 import { recordGameForQuest } from '@/lib/quests'
 import {
-  pickQuestionsForGame,
+  pickQuestionsForAge,
   interpolateQuestion,
   type QuizQuestion,
 } from '@/lib/quiz'
@@ -54,7 +54,7 @@ export default function QuizGame({
   } | null>(null)
 
   useEffect(() => {
-    const qs = pickQuestionsForGame(activeTheme.id, level, 5)
+    const qs = pickQuestionsForAge(activeTheme.id, ageGroup, level, 5)
     setQuestions(qs)
     setQIndex(0)
     setChosen(null)
@@ -94,7 +94,7 @@ export default function QuizGame({
   }, [chosen, current, qIndex, questions, score, activeTheme.id, ageGroup, level, onLevelComplete])
 
   function replay() {
-    const qs = pickQuestionsForGame(activeTheme.id, level, 5)
+    const qs = pickQuestionsForAge(activeTheme.id, ageGroup, level, 5)
     setQuestions(qs)
     setQIndex(0)
     setChosen(null)
@@ -130,8 +130,15 @@ export default function QuizGame({
     )
   }
 
+  const tier = getAgeTier(ageGroup)
+
   return (
     <div className="select-none flex flex-col gap-5">
+
+      {/* Age tier badge */}
+      <span className={`self-start text-[10px] font-black px-2.5 py-1 rounded-full border ${tier.color}`}>
+        {tier.emoji} {tier.label}
+      </span>
 
       {/* ── Progress bar + score ── */}
       <div className="flex items-center gap-3">

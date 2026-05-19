@@ -94,11 +94,26 @@ export async function POST(req: NextRequest) {
 
     const name    = childName?.trim() || 'the explorer'
     const setting = THEME_HINTS[theme] ?? 'magical adventure world'
-    const ageCtx  =
-      ageGroup === '2-4'  ? 'a toddler aged 2-4, use the simplest words possible' :
-      ageGroup === '4-6'  ? 'a child aged 4-6, use simple but vivid language' :
-      ageGroup === '6-8'  ? 'a child aged 6-8, use descriptive and exciting language' :
-                             'an older child aged 8-12, use rich vocabulary and clever twists'
+
+    // Age-specific language + narrative style guidance
+    const ageCtx =
+      ageGroup === '2-4'
+        ? 'a toddler aged 2-4. Use the very simplest words (1-2 syllables). Short sentences. ' +
+          'Only familiar, safe concepts. Choices must be obvious and joyful, never scary. ' +
+          'Lots of animals, colours, and sounds (WOOF! SPLASH! YAY!).'
+        : ageGroup === '4-6'
+        ? 'a child aged 4-6. Use simple, vivid language. Short sentences with a few describing words. ' +
+          'Choices should feel magical and exciting. Include some humour and wonder. ' +
+          'Clear happy outcomes at every path.'
+        : ageGroup === '6-8'
+        ? 'a child aged 6-8. Use descriptive, exciting language with some challenge vocabulary. ' +
+          'Build genuine tension and adventure. Choices should feel like real decisions with consequence. ' +
+          'Include some mystery, humour, and one surprising twist per path.'
+        : /* 8-12 */
+          'an older child aged 8-12. Use rich, varied vocabulary. Build real narrative tension. ' +
+          'Choices should have meaningful moral or strategic weight — not just A vs B but WHY it matters. ' +
+          'Include plot twists, clever wordplay, and endings that feel genuinely earned. ' +
+          'Treat the reader as intelligent; avoid talking down to them.'
 
     const userPrompt =
       `Write a personalised branching adventure story for ${name} (${ageCtx}).\n` +

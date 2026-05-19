@@ -209,3 +209,15 @@ export function getThemeById(id: string): Theme {
 export function getLevels(ageGroup: AgeGroupId): LevelConfig[] {
   return LEVEL_CONFIGS[ageGroup] ?? LEVEL_CONFIGS['4-6']
 }
+
+// Visual experience tier shown in game headers
+const AGE_TIERS: Record<string, { label: string; emoji: string; color: string }> = {
+  '2-4':  { label: 'Tiny Explorer', emoji: '🌱', color: 'bg-green-100 text-green-700 border-green-200' },
+  '4-6':  { label: 'Adventurer',    emoji: '⚡', color: 'bg-yellow-100 text-yellow-700 border-yellow-200' },
+  '6-8':  { label: 'Champion',      emoji: '🏆', color: 'bg-orange-100 text-orange-700 border-orange-200' },
+  '8-12': { label: 'Legend Mode',   emoji: '🔥', color: 'bg-red-100 text-red-700 border-red-200' },
+}
+
+export function getAgeTier(ageGroup: string) {
+  return AGE_TIERS[ageGroup] ?? AGE_TIERS['4-6']
+}

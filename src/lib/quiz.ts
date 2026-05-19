@@ -272,7 +272,29 @@ export function pickQuestionsForGame(
 ): QuizQuestion[] {
   const pool = getQuestionsForLevel(theme, level)
   if (pool.length <= count) return [...pool]
-  // Shuffle and pick `count`
-  const shuffled = [...pool].sort(() => Math.random() - 0.5)
-  return shuffled.slice(0, count)
+  return [...pool].sort(() => Math.random() - 0.5).slice(0, count)
+}
+
+// Age → max question level. A 5-year-old should never see level-5 trivia.
+const MAX_LEVEL_FOR_AGE: Record<string, number> = {
+  '2-4':  1,
+  '4-6':  2,
+  '6-8':  4,
+  '8-12': 5,
+}
+
+export function getMaxLevelForAge(ageGroup: string): number {
+  return MAX_LEVEL_FOR_AGE[ageGroup] ?? 5
+}
+
+// Age-aware question picker — caps difficulty to the age group's ceiling
+export function pickQuestionsForAge(
+  theme: string,
+  ageGroup: string,
+  targetLevel: number,
+  count = 5,
+): QuizQuestion[] {
+  const maxLevel = getMaxLevelForAge(ageGroup)
+  const level = Math.min(targetLevel, maxLevel)
+  return pickQuestionsForGame(theme, level, count)
 }

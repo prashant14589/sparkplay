@@ -30,34 +30,80 @@ export const GRID_SIZES: Record<string, number> = {
   '8-12': 12,
 }
 
-// ─── Theme word banks ──────────────────────────────────────────────────────
+// ─── Age-stratified theme word banks ─────────────────────────────────────
+// 4-6: short (3-4 letters) — decodable, single-syllable
+// 6-8: medium (4-6 letters) — familiar but challenging
+// 8-12: longer (6-9 letters) — vocabulary-building
 
-const WORD_BANKS: Record<string, string[]> = {
-  animals:     ['DOG', 'CAT', 'LION', 'BEAR', 'FISH', 'BIRD', 'FROG', 'DUCK', 'WOLF', 'DEER', 'CROW', 'MOLE'],
-  dinos:       ['TREX', 'DINO', 'CLAW', 'ROAR', 'BONE', 'TAIL', 'FANG', 'WING', 'NEST', 'HERD', 'GIGA', 'FOSSIL'],
-  unicorns:    ['HORN', 'WISH', 'GLOW', 'STAR', 'MOON', 'PINK', 'GOLD', 'FAIRY', 'MAGIC', 'DREAM', 'LOVE'],
-  ocean:       ['FISH', 'WAVE', 'REEF', 'CRAB', 'SHARK', 'WHALE', 'PEARL', 'TIDE', 'SAND', 'CORAL', 'SEAL'],
-  space:       ['STAR', 'MOON', 'MARS', 'ORBIT', 'COMET', 'ALIEN', 'RING', 'SUN', 'NOVA', 'DUST', 'DARK'],
-  superheroes: ['CAPE', 'HERO', 'SAVE', 'MASK', 'FLY', 'LEAP', 'BRAVE', 'SWIFT', 'POWER', 'FIST', 'GUARD'],
-  farm:        ['COW', 'PIG', 'HEN', 'BARN', 'HAY', 'CROP', 'MILK', 'SEED', 'RAIN', 'SOIL', 'TOOL'],
-  food:        ['CAKE', 'TACO', 'RICE', 'SOUP', 'MILK', 'BEEF', 'PORK', 'SALT', 'LIME', 'PLUM', 'MINT'],
+const WORD_BANKS_BY_AGE: Record<string, Record<string, string[]>> = {
+  animals: {
+    '4-6':  ['CAT', 'DOG', 'COW', 'PIG', 'HEN', 'BEE', 'ANT', 'OWL', 'FOX', 'RAT', 'ELK', 'YAK'],
+    '6-8':  ['TIGER', 'EAGLE', 'SNAKE', 'HIPPO', 'PANDA', 'COBRA', 'OTTER', 'MOOSE', 'BISON', 'GECKO', 'RAVEN', 'HYENA'],
+    '8-12': ['DOLPHIN', 'PENGUIN', 'CHEETAH', 'PANTHER', 'LEOPARD', 'VULTURE', 'PIRANHA', 'GORILLA', 'GAZELLE', 'MANATEE', 'NARWHAL', 'WALRUS'],
+  },
+  dinos: {
+    '4-6':  ['REX', 'CLAW', 'TAIL', 'BONE', 'NEST', 'ROAR', 'WING', 'HERD', 'FANG', 'DOME', 'SLOW', 'HUGE'],
+    '6-8':  ['CREST', 'FRILL', 'SPIKE', 'PLATE', 'ARMOR', 'SWIFT', 'SCALE', 'TEETH', 'GIANT', 'FLIER', 'CLAWS', 'TREX'],
+    '8-12': ['RAPTOR', 'FOSSIL', 'ANCIENT', 'EXTINCT', 'PREDATOR', 'THEROPOD', 'JURASSIC', 'ARMORED', 'SPECIES', 'SAUROPOD', 'REPTILE', 'HABITAT'],
+  },
+  unicorns: {
+    '4-6':  ['HORN', 'WISH', 'GLOW', 'STAR', 'MOON', 'PINK', 'GOLD', 'LOVE', 'GIFT', 'SOFT', 'PURE', 'SILK'],
+    '6-8':  ['MAGIC', 'FAIRY', 'CHARM', 'PRISM', 'DREAM', 'CLOUD', 'PEARL', 'DANCE', 'GRACE', 'GLEAM', 'WINGS', 'TIARA'],
+    '8-12': ['CRYSTAL', 'GLITTER', 'RAINBOW', 'ENCHANT', 'SPARKLE', 'FANTASY', 'STARDUST', 'SHIMMER', 'MAGICAL', 'MYSTICAL', 'WONDROUS', 'RADIANT'],
+  },
+  ocean: {
+    '4-6':  ['FISH', 'CRAB', 'WAVE', 'REEF', 'TIDE', 'SAND', 'SEAL', 'CLAM', 'FOAM', 'GULL', 'KELP', 'POOL'],
+    '6-8':  ['SHARK', 'WHALE', 'CORAL', 'PEARL', 'SQUID', 'PRAWN', 'TROUT', 'BEACH', 'SHELL', 'BRINE', 'SWIRL', 'ALGAE'],
+    '8-12': ['DOLPHIN', 'OCTOPUS', 'JELLYFISH', 'PLANKTON', 'NAUTILUS', 'SEAHORSE', 'MANATEE', 'LOBSTER', 'CURRENT', 'TSUNAMI', 'ABYSSAL', 'BARNACLE'],
+  },
+  space: {
+    '4-6':  ['STAR', 'MOON', 'SUN', 'MARS', 'RING', 'NOVA', 'DUST', 'GLOW', 'VAST', 'DARK', 'VOID', 'BEAM'],
+    '6-8':  ['ORBIT', 'COMET', 'ALIEN', 'LUNAR', 'SOLAR', 'PROBE', 'RINGS', 'FLARE', 'PULSE', 'TITAN', 'PLUTO', 'VENUS'],
+    '8-12': ['NEBULA', 'GALAXY', 'ECLIPSE', 'GRAVITY', 'MISSION', 'STATION', 'ASTEROID', 'SATELLITE', 'BLACKHOLE', 'SUPERNOVA', 'WORMHOLE', 'LIGHTYEAR'],
+  },
+  superheroes: {
+    '4-6':  ['CAPE', 'HERO', 'MASK', 'FLY', 'SAVE', 'LEAP', 'FAST', 'BOLD', 'RISE', 'WING', 'BEAM', 'GLOW'],
+    '6-8':  ['BRAVE', 'SWOOP', 'POWER', 'GUARD', 'SPEED', 'SQUAD', 'VAULT', 'BLAZE', 'SURGE', 'LASER', 'SCOUT', 'RIVAL'],
+    '8-12': ['JUSTICE', 'STRENGTH', 'FEARLESS', 'CHAMPION', 'DEFENDER', 'SIDEKICK', 'IDENTITY', 'VILLAIN', 'MISSION', 'INVINCIBLE', 'FORTRESS', 'SHIELD'],
+  },
+  farm: {
+    '4-6':  ['COW', 'PIG', 'HEN', 'HAY', 'BARN', 'SOIL', 'SEED', 'MILK', 'RAIN', 'LAMB', 'GOAT', 'CROP'],
+    '6-8':  ['SHEEP', 'GOOSE', 'HORSE', 'WHEAT', 'MAIZE', 'FENCE', 'GRASS', 'CHICK', 'GRAIN', 'ROOST', 'BROOK', 'PETAL'],
+    '8-12': ['HARVEST', 'TRACTOR', 'ORCHARD', 'PASTURE', 'COMPOST', 'IRRIGATION', 'LIVESTOCK', 'POULTRY', 'FURROW', 'THRESHER', 'FARMSTEAD', 'WINDMILL'],
+  },
+  food: {
+    '4-6':  ['CAKE', 'RICE', 'MILK', 'LIME', 'PLUM', 'MINT', 'CORN', 'BEET', 'PEAR', 'BEAN', 'TUNA', 'CHIP'],
+    '6-8':  ['PIZZA', 'BREAD', 'PASTA', 'LEMON', 'CREAM', 'SPICE', 'SALAD', 'GRAVY', 'STEAK', 'WAFER', 'MANGO', 'MAPLE'],
+    '8-12': ['SAFFRON', 'CINNAMON', 'TURMERIC', 'AVOCADO', 'BROCCOLI', 'BARBECUE', 'SOURDOUGH', 'CARAMEL', 'CROISSANT', 'SMOOTHIE', 'BURRITO', 'RISOTTO'],
+  },
 }
 
-export function getWordsForTheme(theme: string): string[] {
-  return WORD_BANKS[theme] ?? []
+export function getWordsForTheme(theme: string, ageGroup = '6-8'): string[] {
+  const banks = WORD_BANKS_BY_AGE[theme]
+  if (!banks) return []
+  // Fall back to '6-8' if exact age group not found
+  return banks[ageGroup] ?? banks['6-8'] ?? []
 }
 
 // All 8 directions: horiz, vert, diag
-const DIRECTIONS: [number, number][] = [
+const DIRECTIONS_ALL: [number, number][] = [
+  [0, 1], [0, -1],   // right, left
+  [1, 0], [-1, 0],   // down, up
+  [1, 1], [1, -1],   // diag ↘ ↙
+  [-1, 1], [-1, -1], // diag ↗ ↖
+]
+
+// Horizontal + vertical only (no diagonals) — easier for younger players
+const DIRECTIONS_SIMPLE: [number, number][] = [
   [0, 1], [0, -1],  // right, left
   [1, 0], [-1, 0],  // down, up
-  [1, 1], [1, -1],  // diag ↘ ↙
-  [-1, 1], [-1, -1], // diag ↗ ↖
 ]
 
 // ─── Grid builder ─────────────────────────────────────────────────────────
 
-export function buildGrid(words: string[], size: number): GridResult {
+export function buildGrid(words: string[], size: number, allowDiagonals = true): GridResult {
+  const directions = allowDiagonals ? DIRECTIONS_ALL : DIRECTIONS_SIMPLE
+
   // Initialise with empty letters
   const grid: GridCell[][] = Array.from({ length: size }, (_, r) =>
     Array.from({ length: size }, (_, c) => ({ letter: '', row: r, col: c })),
@@ -67,7 +113,7 @@ export function buildGrid(words: string[], size: number): GridResult {
 
   for (const word of words) {
     if (word.length > size) continue
-    const success = tryPlaceWord(grid, word, size)
+    const success = tryPlaceWord(grid, word, size, directions)
     if (success) placed.push(success)
   }
 
@@ -84,9 +130,8 @@ export function buildGrid(words: string[], size: number): GridResult {
   return { grid, placed }
 }
 
-function tryPlaceWord(grid: GridCell[][], word: string, size: number): PlacedWord | null {
-  // Shuffle directions to get variety
-  const dirs = [...DIRECTIONS].sort(() => Math.random() - 0.5)
+function tryPlaceWord(grid: GridCell[][], word: string, size: number, directions: [number, number][]): PlacedWord | null {
+  const dirs = [...directions].sort(() => Math.random() - 0.5)
 
   for (let attempt = 0; attempt < 80; attempt++) {
     const startRow = Math.floor(Math.random() * size)

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { type Theme, type AgeGroupId, THEMES, getLevels } from '@/lib/themes'
+import { type Theme, type AgeGroupId, THEMES, getLevels, getAgeTier } from '@/lib/themes'
 import { recordCompletion, getProgress, type Badge } from '@/lib/progress'
 import { Sounds } from '@/lib/sounds'
 import HowToPlay from '@/components/games/HowToPlay'
@@ -172,9 +172,19 @@ export default function MemoryMatch({
     )
   }
 
+  const tier = getAgeTier(ageGroup)
+
   return (
     <div className="select-none">
       <HowToPlay gameType="memory" />
+
+      {/* Age tier badge */}
+      <div className="flex items-center justify-between mb-2">
+        <span className={`text-[10px] font-black px-2.5 py-1 rounded-full border ${tier.color}`}>
+          {tier.emoji} {tier.label}
+        </span>
+        <span className="text-xs text-gray-400 font-semibold">Level {currentLevel}/{TOTAL_LEVELS}</span>
+      </div>
 
       {/* ── Gameplay header bar (matches mockup screen 2) ── */}
       <div className="flex items-center justify-between mb-4 bg-gray-50 rounded-2xl px-4 py-2.5">
