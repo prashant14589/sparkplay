@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import PrintButton from './PrintButton'
 import { getThemeById } from '@/lib/themes'
 import { getStoryById, interpolate } from '@/lib/stories'
 import { notFound, redirect } from 'next/navigation'
@@ -94,16 +95,7 @@ export default async function PrintPage({ params }: Props) {
             >
               ← Back to editor
             </a>
-            <button
-              onClick={() => window.print()}
-              style={{
-                background: '#6d28d9', color: 'white', border: 'none',
-                borderRadius: 8, padding: '10px 20px', fontSize: 14,
-                fontWeight: 700, cursor: 'pointer',
-              }}
-            >
-              🖨️ Print / Save as PDF
-            </button>
+            <PrintButton />
           </div>
 
           <div className="header">
