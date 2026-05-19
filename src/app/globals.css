@@ -75,6 +75,21 @@ body {
   40%       { box-shadow: 0 0 24px 6px rgba(167, 139, 250, 0.8); }
 }
 
+/* ─── Ambient background particle drift ─── */
+@keyframes particleDrift {
+  0%   { transform: translateY(0px)   translateX(0px)  rotate(0deg)  scale(1);   opacity: 0.55; }
+  25%  { transform: translateY(-18px) translateX(8px)  rotate(15deg) scale(1.1); opacity: 0.7; }
+  50%  { transform: translateY(-10px) translateX(-6px) rotate(-8deg) scale(0.95); opacity: 0.5; }
+  75%  { transform: translateY(-24px) translateX(4px)  rotate(20deg) scale(1.05); opacity: 0.65; }
+  100% { transform: translateY(0px)   translateX(0px)  rotate(0deg)  scale(1);   opacity: 0.55; }
+}
+
+/* ─── Gradient background breathe ─── */
+@keyframes bgBreathe {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.82; }
+}
+
 .animate-float        { animation: float        3.2s ease-in-out infinite; }
 .animate-float-alt    { animation: floatAlt     3.8s ease-in-out infinite; }
 .animate-float-slow   { animation: floatSlow    4.5s ease-in-out infinite; }
