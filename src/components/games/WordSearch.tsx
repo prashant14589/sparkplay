@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { type Theme, THEMES } from '@/lib/themes'
+import { Sounds } from '@/lib/sounds'
 import {
   buildGrid,
   getWordsForTheme,
@@ -126,6 +127,7 @@ export default function WordSearch({
 
     const match = checkPath(grid, placed, selecting)
     if (match && !found.has(match.word)) {
+      Sounds.wordFound()
       const nextFound = new Set(found)
       nextFound.add(match.word)
       setFound(nextFound)
@@ -133,6 +135,7 @@ export default function WordSearch({
 
       // Check win
       if (nextFound.size >= placed.length) {
+        Sounds.win()
         const finalMoves = moves + 1
         const r = recordCompletion('word_search', activeTheme.id, ageGroup, level, finalMoves, placed.length)
         setCompletionResult({ stars: r.stars, coins: r.coinsEarned, newBadges: r.newBadges, streak: r.streak })

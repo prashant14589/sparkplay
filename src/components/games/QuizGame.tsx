@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { type Theme, THEMES } from '@/lib/themes'
+import { Sounds } from '@/lib/sounds'
 import {
   pickQuestionsForGame,
   interpolateQuestion,
@@ -67,7 +68,8 @@ export default function QuizGame({
     if (chosen !== null || !current) return
     setChosen(idx)
     const correct = idx === current.correct
-    if (correct) setScore((s) => s + 1)
+    if (correct) { setScore((s) => s + 1); Sounds.correct() }
+    else Sounds.wrong()
 
     setTimeout(() => {
       if (qIndex + 1 >= questions.length) {

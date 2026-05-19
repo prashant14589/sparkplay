@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { type Theme, THEMES } from '@/lib/themes'
 import { recordCompletion, type Badge } from '@/lib/progress'
+import { Sounds } from '@/lib/sounds'
 import HowToPlay from './HowToPlay'
 import LevelComplete from '@/components/LevelComplete'
 import GameEmoji from '@/components/GameEmoji'
@@ -73,6 +74,7 @@ export default function MazeGame({ theme, ageGroup = '4-6', childName, onWin }: 
 
   const move = useCallback((dir: 'n' | 'e' | 's' | 'w') => {
     if (!maze || won) return
+    // Read current pos to check wall — avoids side-effects inside setPos updater
     setPos((p) => {
       const cell = maze[p.r][p.c]
       if (cell[dir]) return p
@@ -82,6 +84,9 @@ export default function MazeGame({ theme, ageGroup = '4-6', childName, onWin }: 
         s: { r: p.r + 1, c: p.c },
         w: { r: p.r,     c: p.c - 1 },
       }[dir]
+      // Schedule sounds outside the updater via microtask (updaters must be pure)
+      const isGoal = next.r === size - 1 && next.c === size - 1
+      Promise.resolve().then(() => isGoal ? Sounds.win() : Sounds.move())
       setMoves((m) => m + 1)
       if (next.r === size - 1 && next.c === size - 1) {
         setWon(true)

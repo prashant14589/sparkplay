@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Badge } from '@/lib/progress'
+import { Sounds } from '@/lib/sounds'
 import GameEmoji from '@/components/GameEmoji'
 import IllustrationImage from '@/components/IllustrationImage'
 import { getCelebrationIllustration, getHeroIllustration } from '@/lib/illustrations'
@@ -67,8 +68,9 @@ export default function LevelComplete({
   }
 
   // Stagger the reward cards + button entrance
+  // win() already fired by the game component; coin() accents the reward reveal
   useEffect(() => {
-    const t1 = setTimeout(() => setRewardsVisible(true), 500)
+    const t1 = setTimeout(() => { setRewardsVisible(true); Sounds.coin() }, 500)
     const t2 = setTimeout(() => setBtnVisible(true), 900)
     return () => { clearTimeout(t1); clearTimeout(t2) }
   }, [])

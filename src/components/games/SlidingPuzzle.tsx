@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { type Theme, THEMES } from '@/lib/themes'
 import { recordCompletion, type Badge } from '@/lib/progress'
+import { Sounds } from '@/lib/sounds'
 import HowToPlay from './HowToPlay'
 import LevelComplete from '@/components/LevelComplete'
 
@@ -79,11 +80,15 @@ export default function SlidingPuzzle({ theme, ageGroup = '4-6', childName, onWi
 
   const slide = useCallback((tilePos: number) => {
     if (won) return
+    // Check adjacency outside the updater (updaters must be pure / side-effect-free)
+    const emptyPos = tiles.indexOf(0)
+    if (!isAdjacent(tilePos, emptyPos, size)) return
+    Sounds.slide()
     setTiles((prev) => {
-      const emptyPos = prev.indexOf(0)
-      if (!isAdjacent(tilePos, emptyPos, size)) return prev
+      const empty = prev.indexOf(0)
+      if (!isAdjacent(tilePos, empty, size)) return prev
       const next = [...prev]
-      ;[next[tilePos], next[emptyPos]] = [next[emptyPos], next[tilePos]]
+      ;[next[tilePos], next[empty]] = [next[empty], next[tilePos]]
       return next
     })
     setMoves((m) => {
@@ -94,6 +99,7 @@ export default function SlidingPuzzle({ theme, ageGroup = '4-6', childName, onWi
 
   useEffect(() => {
     if (tiles.length > 0 && isSolved(tiles) && !won && moves > 0) {
+      Sounds.win()
       setWon(true); setRunning(false)
       onWin?.()
       const tileCount = size * size - 1   // unit for puzzle star thresholds

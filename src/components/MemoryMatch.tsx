@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { type Theme, type AgeGroupId, THEMES, getLevels } from '@/lib/themes'
 import { recordCompletion, getProgress, type Badge } from '@/lib/progress'
+import { Sounds } from '@/lib/sounds'
 import HowToPlay from '@/components/games/HowToPlay'
 import LevelComplete from '@/components/LevelComplete'
 import GameEmoji from '@/components/GameEmoji'
@@ -91,6 +92,7 @@ export default function MemoryMatch({
     if (moves === 0) setTimerOn(true)
 
     const next = [...selected, id]
+    Sounds.flip()
     setCards((prev) => prev.map((c) => (c.id === id ? { ...c, isFlipped: true } : c)))
     setSelected(next)
     if (next.length < 2) return
@@ -100,6 +102,7 @@ export default function MemoryMatch({
     setLocked(true)
 
     if (a.emoji === b.emoji) {
+      Sounds.match()
       setTimeout(() => {
         setCards((prev) => prev.map((c) => (next.includes(c.id) ? { ...c, isMatched: true } : c)))
         setJustMatched(new Set(next))
@@ -111,6 +114,7 @@ export default function MemoryMatch({
         setTimeout(() => setShowToast(false), 1700)
       }, 400)
     } else {
+      Sounds.mismatch()
       setTimeout(() => {
         setCards((prev) => prev.map((c) => (next.includes(c.id) ? { ...c, isFlipped: false } : c)))
         setSelected([])
@@ -125,6 +129,7 @@ export default function MemoryMatch({
     // setDone(false) in nextLevel() would re-trigger this effect with the
     // still-matched cards from the previous level and skip a level.
     if (cards.length > 0 && moves > 0 && cards.every((c) => c.isMatched) && !done) {
+      Sounds.win()
       setDone(true)
       setTimerOn(false)
       onLevelComplete(currentLevel, moves)

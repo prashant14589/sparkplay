@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { logout } from '@/app/actions/auth'
+import SoundToggle from '@/components/SoundToggle'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -18,6 +19,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
             {/* Right-side actions */}
             <div className="flex items-center gap-2">
+              <SoundToggle />
               {/* Back to home / play games */}
               <Link
                 href="/"
