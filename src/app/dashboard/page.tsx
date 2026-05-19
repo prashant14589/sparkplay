@@ -11,7 +11,7 @@ import GameEmoji from '@/components/GameEmoji'
 import BuddyWidget from '@/components/BuddyWidget'
 
 // Themes that have hero illustrations ready
-const ILLUSTRATED_THEMES = new Set(['animals', 'dinos', 'unicorns', 'ocean', 'space', 'superheroes', 'food'])
+const ILLUSTRATED_THEMES = new Set(['animals', 'dinos', 'unicorns', 'ocean', 'space', 'superheroes', 'food', 'farm'])
 
 export default function DashboardPage() {
   const [games, setGames] = useState<Game[]>([])

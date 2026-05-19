@@ -11,7 +11,7 @@ import { recordGameForQuest } from '@/lib/quests'
 import { getActiveBuddy, calcXP, calcLevel, randomPhrase } from '@/lib/buddy'
 
 const DEFAULT_AGE: AgeGroupId = '4-6'
-const ILLUSTRATED = new Set(['animals', 'dinos', 'unicorns', 'ocean', 'space', 'superheroes', 'food'])
+const ILLUSTRATED = new Set(['animals', 'dinos', 'unicorns', 'ocean', 'space', 'superheroes', 'food', 'farm'])
 
 // Per-theme ambient particles and CSS gradient colors
 const THEME_META: Record<string, { particles: string[]; bgFrom: string; bgTo: string }> = {
