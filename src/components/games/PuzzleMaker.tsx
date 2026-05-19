@@ -24,6 +24,8 @@ const IMG_H = 1024
 interface Props {
   childName?: string
   ageGroup?: string
+  gameId?: string                            // if set, saves completed image to Supabase
+  existingContent?: Record<string, unknown>  // merged into content on save
   onComplete?: () => void
 }
 
@@ -33,7 +35,7 @@ interface BoardPiece extends PuzzlePiece {
   placed: boolean   // true once correctly snapped to its slot
 }
 
-export default function PuzzleMaker({ childName, ageGroup = '4-6', onComplete }: Props) {
+export default function PuzzleMaker({ childName, ageGroup = '4-6', gameId, existingContent, onComplete }: Props) {
   const scenarios = getScenariosForAge(ageGroup)
   const defaultDifficulty = DEFAULT_DIFFICULTY_FOR_AGE[ageGroup] ?? '6'
 
@@ -48,6 +50,23 @@ export default function PuzzleMaker({ childName, ageGroup = '4-6', onComplete }:
   const [errorMsg, setErrorMsg]         = useState('')
   const [result, setResult]             = useState<{ stars: number; coins: number; newBadges: Badge[]; streak: number } | null>(null)
   const boardRef = useRef<HTMLDivElement>(null)
+
+  // Save completed puzzle image to Supabase so the print page can show it
+  useEffect(() => {
+    if (gameState !== 'complete' || !gameId || !imageUrl || !selectedScenario) return
+    fetch(`/api/games/${gameId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        content: {
+          ...(existingContent ?? {}),
+          puzzleImageUrl:      imageUrl,
+          puzzleScenario:      selectedScenario.label,
+          puzzleDifficulty:    difficulty,
+        },
+      }),
+    }).catch(() => {/* non-critical — print page falls back gracefully */})
+  }, [gameState]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const displayName = childName?.trim() || ''
   const { cols, rows } = DIFFICULTY_GRID[difficulty]

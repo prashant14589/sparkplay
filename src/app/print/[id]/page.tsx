@@ -122,9 +122,16 @@ export default async function PrintPage({ params }: Props) {
             <StoryPrint childName={childName} />
           )}
 
-          {/* ── Puzzle Maker: AI image lives in browser localStorage, can't be server-rendered ── */}
+          {/* ── Puzzle Maker: show saved image if available, fallback card otherwise ── */}
           {templateType === 'puzzle_maker' && (
-            <PuzzleMakerPrint theme={theme} childName={childName} ageGroup={ageGroup} />
+            <PuzzleMakerPrint
+              theme={theme}
+              childName={childName}
+              ageGroup={ageGroup}
+              imageUrl={content?.puzzleImageUrl ?? null}
+              scenario={content?.puzzleScenario ?? null}
+              difficulty={content?.puzzleDifficulty ?? null}
+            />
           )}
 
           {/* ── Other templates (quiz, word_search, number_merge, coloring) ── */}
@@ -138,9 +145,23 @@ export default async function PrintPage({ params }: Props) {
             </div>
           )}
 
+          {/* ── SparkPlay watermark / promo footer ── */}
           <div className="footer">
-            <p>Created with SparkPlay · sparkplay-nu.vercel.app</p>
-            <p style={{ marginTop: 4 }}>Print this page and have fun! ✂️</p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 8 }}>
+              <span style={{ fontSize: 16 }}>✦</span>
+              <span style={{ fontWeight: 800, color: '#6d28d9', fontSize: 14, letterSpacing: '0.05em' }}>SPARKPLAY</span>
+              <span style={{ fontSize: 16 }}>✦</span>
+            </div>
+            <p style={{ fontWeight: 600, color: '#374151', marginBottom: 4 }}>
+              Personalised educational games for kids aged 2–12
+            </p>
+            <p>
+              Free to play · Premium from ₹499/mo ·{' '}
+              <strong style={{ color: '#6d28d9' }}>sparkplay-nu.vercel.app</strong>
+            </p>
+            <p style={{ marginTop: 8, color: '#d1d5db', fontSize: 11 }}>
+              Printed from SparkPlay — create your own personalised kids games in minutes ✂️
+            </p>
           </div>
         </div>
     </>
@@ -358,52 +379,71 @@ function templateEmoji(type: string) {
   return map[type] ?? '🎮'
 }
 
-function PuzzleMakerPrint({ theme, childName, ageGroup }: {
+function PuzzleMakerPrint({ theme, childName, ageGroup, imageUrl, scenario, difficulty }: {
   theme: ReturnType<typeof getThemeById>
   childName: string
   ageGroup: string
+  imageUrl: string | null
+  scenario: string | null
+  difficulty: string | null
 }) {
   const name = childName || 'Your child'
   return (
     <div style={{ textAlign: 'center', padding: '24px 0' }}>
-      <div style={{ fontSize: 64, marginBottom: 16 }}>🧩</div>
-      <h2 style={{ fontSize: 22, fontWeight: 800, color: '#111', marginBottom: 8 }}>
-        AI Puzzle Maker
+      <h2 style={{ fontSize: 22, fontWeight: 800, color: '#111', marginBottom: 6 }}>
+        🧩 AI Puzzle Maker
       </h2>
-      <p style={{ fontSize: 15, color: '#6b7280', marginBottom: 24 }}>
+      <p style={{ fontSize: 15, color: '#6b7280', marginBottom: 20 }}>
         {childName ? `A personalised AI puzzle made for ${name}` : 'A personalised AI puzzle'}
       </p>
 
-      <div style={{ background: '#f3f4f6', borderRadius: 16, padding: 20, marginBottom: 20, textAlign: 'left' }}>
-        <h3 style={{ fontSize: 14, fontWeight: 700, color: '#374151', marginBottom: 12 }}>About this puzzle</h3>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <span style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: 999, padding: '4px 12px', fontSize: 13, fontWeight: 600 }}>
-            {theme.emoji} {theme.name} theme
-          </span>
-          <span style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: 999, padding: '4px 12px', fontSize: 13, fontWeight: 600 }}>
-            Age {ageGroup}
-          </span>
+      {imageUrl ? (
+        /* ── Image saved — show it ready to print ── */
+        <div>
+          <div style={{ background: '#f3f4f6', borderRadius: 16, padding: 12, marginBottom: 16, display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <span style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: 999, padding: '4px 12px', fontSize: 13, fontWeight: 600 }}>
+              {theme.emoji} {theme.name}
+            </span>
+            {scenario && (
+              <span style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: 999, padding: '4px 12px', fontSize: 13, fontWeight: 600 }}>
+                🎨 {scenario}
+              </span>
+            )}
+            {difficulty && (
+              <span style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: 999, padding: '4px 12px', fontSize: 13, fontWeight: 600 }}>
+                🧩 {difficulty} pieces
+              </span>
+            )}
+          </div>
+
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={imageUrl}
+            alt={`${name}'s AI puzzle: ${scenario ?? 'personalised scene'}`}
+            style={{ width: '100%', maxWidth: 560, borderRadius: 16, border: '2px solid #e5e7eb', marginBottom: 16 }}
+          />
+
+          <p style={{ fontSize: 13, color: '#6b7280', marginTop: 8 }}>
+            ✂️ Cut along the edges and shuffle the pieces to play!
+          </p>
         </div>
-      </div>
-
-      <div style={{ border: '2px dashed #c4b5fd', borderRadius: 16, padding: '24px 20px', marginBottom: 20 }}>
-        <p style={{ fontWeight: 800, fontSize: 16, color: '#6d28d9', marginBottom: 8 }}>🎨 AI-generated puzzle image</p>
-        <p style={{ fontSize: 13, color: '#7c3aed', lineHeight: 1.7, marginBottom: 16 }}>
-          The personalised illustration is generated by AI each time you play
-          and stored in your browser — it cannot be printed from the server.
-        </p>
-        <p style={{ fontSize: 13, color: '#374151', lineHeight: 1.7 }}>
-          <strong>To save your puzzle image:</strong> open the game in SparkPlay,
-          generate the puzzle, then take a screenshot of the completed image
-          or use your browser&apos;s &quot;Save image as&quot; option.
-        </p>
-      </div>
-
-      <div style={{ background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: 12, padding: 16 }}>
-        <p style={{ fontSize: 13, color: '#7c3aed', fontWeight: 600 }}>
-          🌐 Open at: sparkplay-nu.vercel.app
-        </p>
-      </div>
+      ) : (
+        /* ── Image not yet saved — guide user to complete the puzzle first ── */
+        <div>
+          <div style={{ border: '2px dashed #c4b5fd', borderRadius: 16, padding: '24px 20px', marginBottom: 20 }}>
+            <p style={{ fontWeight: 800, fontSize: 16, color: '#6d28d9', marginBottom: 8 }}>🎨 Puzzle image not yet generated</p>
+            <p style={{ fontSize: 13, color: '#374151', lineHeight: 1.7 }}>
+              Complete the puzzle game in SparkPlay first — the AI image is saved
+              automatically when all pieces are placed. Then re-open this print page.
+            </p>
+          </div>
+          <div style={{ background: '#f3f4f6', borderRadius: 12, padding: 16 }}>
+            <p style={{ fontSize: 13, color: '#6d28d9', fontWeight: 600 }}>
+              🌐 sparkplay-nu.vercel.app
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

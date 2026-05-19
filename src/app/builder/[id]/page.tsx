@@ -61,7 +61,12 @@ function GamePreview({ game }: { game: Game }) {
       return (
         <PaywallGate featureName="Puzzle Maker" featureEmoji="🧩">
           <div className="w-full max-w-sm mx-auto">
-            <PuzzleMaker childName={childName} ageGroup={ageGroup} />
+            <PuzzleMaker
+              childName={childName}
+              ageGroup={ageGroup}
+              gameId={game.id}
+              existingContent={game.content as Record<string, unknown>}
+            />
           </div>
         </PaywallGate>
       )
