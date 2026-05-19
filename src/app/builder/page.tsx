@@ -9,6 +9,8 @@ import {
   type AgeGroupId, type Theme,
 } from '@/lib/themes'
 
+const ILLUSTRATED = new Set(['animals', 'dinos', 'unicorns', 'ocean', 'space', 'superheroes', 'food', 'farm'])
+
 type Step = 'age' | 'pick' | 'customize'
 
 const STEP_NUM: Record<Step, number> = { age: 1, pick: 2, customize: 3 }
@@ -180,17 +182,24 @@ export default function BuilderPage() {
                 key={t.id}
                 onClick={() => selectTemplate(t)}
                 className={[
-                  'text-left rounded-2xl border-2 p-4 transition-all min-h-[44px]',
+                  'relative rounded-2xl overflow-hidden min-h-[120px] flex flex-col justify-end text-left transition-all',
                   selectedTemplate?.id === t.id
-                    ? 'border-violet-500 bg-violet-50 shadow-sm'
-                    : 'border-gray-200 bg-white hover:border-violet-300 hover:shadow-sm',
+                    ? 'ring-3 ring-violet-500 ring-offset-2 shadow-xl scale-[1.02]'
+                    : 'hover:shadow-lg hover:scale-[1.01]',
                 ].join(' ')}
+                style={{ outline: selectedTemplate?.id === t.id ? '3px solid #7c3aed' : 'none', outlineOffset: 3 }}
               >
-                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${t.color} flex items-center justify-center text-xl mb-2`}>
+                {/* Full-bleed gradient background */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${t.color}`} />
+                {/* Large emoji — watermark style */}
+                <span className="absolute top-3 right-3 text-5xl leading-none drop-shadow-lg select-none">
                   {t.emoji}
+                </span>
+                {/* Bottom label */}
+                <div className="relative bg-gradient-to-t from-black/55 to-transparent px-3 pt-6 pb-3">
+                  <p className="font-black text-white text-sm leading-tight drop-shadow">{t.name}</p>
+                  <p className="text-white/70 text-[10px] font-semibold mt-0.5 leading-snug">{t.desc}</p>
                 </div>
-                <p className="font-black text-gray-900 text-sm">{t.name}</p>
-                <p className="text-xs text-gray-400 mt-0.5 font-semibold">{t.desc}</p>
               </button>
             ))}
           </div>
@@ -203,17 +212,31 @@ export default function BuilderPage() {
                 key={th.id}
                 onClick={() => setSelectedTheme(th)}
                 className={[
-                  'rounded-2xl border-2 p-3 text-center transition-all',
+                  'relative rounded-2xl overflow-hidden min-h-[90px] flex flex-col justify-end transition-all',
                   selectedTheme?.id === th.id
-                    ? 'border-violet-500 bg-violet-50 shadow-sm'
-                    : 'border-gray-200 bg-white hover:border-violet-300 hover:shadow-sm',
+                    ? 'shadow-xl scale-[1.03]'
+                    : 'hover:shadow-md hover:scale-[1.01]',
                 ].join(' ')}
+                style={{ outline: selectedTheme?.id === th.id ? '3px solid #7c3aed' : 'none', outlineOffset: 3 }}
               >
-                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${th.color} flex items-center justify-center text-2xl mx-auto mb-1`}>
-                  {th.emoji}
+                {ILLUSTRATED.has(th.id) ? (
+                  <>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={`/illustrations/${th.id}/hero.png`}
+                      alt={th.name}
+                      className="absolute inset-0 w-full h-full object-cover object-top"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
+                  </>
+                ) : (
+                  <div className={`absolute inset-0 bg-gradient-to-br ${th.color}`}>
+                    <span className="absolute bottom-2 right-2 text-4xl leading-none drop-shadow select-none">{th.emoji}</span>
+                  </div>
+                )}
+                <div className="relative px-2 pb-2">
+                  <p className="text-[11px] font-black text-white drop-shadow leading-tight">{th.name}</p>
                 </div>
-                <p className="text-xs font-black text-gray-700">{th.name}</p>
-                <p className="text-xs mt-1 tracking-wider">{th.cards.slice(0, 4).join(' ')}</p>
               </button>
             ))}
           </div>
@@ -238,13 +261,27 @@ export default function BuilderPage() {
 
           {/* Preview badge */}
           {selectedTemplate && selectedTheme && (
-            <div className="flex items-center gap-3 bg-white border-2 border-gray-100 rounded-2xl p-4 mb-6">
-              <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${selectedTheme.color} flex items-center justify-center text-2xl flex-shrink-0`}>
-                {selectedTheme.emoji}
+            <div className="flex items-center gap-4 bg-white border-2 border-gray-100 rounded-2xl overflow-hidden mb-6 shadow-sm">
+              <div className="relative w-20 h-20 flex-shrink-0">
+                {ILLUSTRATED.has(selectedTheme.id) ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={`/illustrations/${selectedTheme.id}/hero.png`}
+                    alt={selectedTheme.name}
+                    className="w-full h-full object-cover object-top"
+                  />
+                ) : (
+                  <div className={`w-full h-full bg-gradient-to-br ${selectedTheme.color} flex items-center justify-center text-3xl`}>
+                    {selectedTheme.emoji}
+                  </div>
+                )}
               </div>
-              <div>
-                <p className="font-black text-gray-900">{selectedTheme.name} {selectedTemplate.name}</p>
-                <p className="text-xs text-gray-400 font-semibold">Age {ageGroup} · {selectedTheme.cards.slice(0, 6).join(' ')}</p>
+              <div className="py-3 pr-4">
+                <p className="font-black text-gray-900 text-sm">{selectedTheme.name} {selectedTemplate.name}</p>
+                <p className="text-xs text-gray-400 font-semibold mt-0.5">Age {ageGroup}</p>
+                <div className={`mt-2 inline-flex items-center gap-1 text-xs font-black text-white bg-gradient-to-r ${selectedTemplate.color} rounded-full px-2.5 py-0.5`}>
+                  {selectedTemplate.emoji} {selectedTemplate.name}
+                </div>
               </div>
             </div>
           )}
