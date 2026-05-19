@@ -176,35 +176,33 @@ const GAME_TYPES = ['memory', 'quiz', 'word_search', 'puzzle', 'maze', 'story']
 
 function AdventureCard({ theme }: { theme: Theme }) {
   const hasHero = ILLUSTRATED_THEMES.has(theme.id)
-  const gameType = GAME_TYPES[THEMES.indexOf(theme) % GAME_TYPES.length]
 
   return (
     <Link
       href={`/?theme=${theme.id}`}
       className="group relative rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all hover:-translate-y-0.5 min-h-[120px] flex flex-col justify-end"
     >
-      {/* Background: hero image or gradient */}
       {hasHero ? (
         <>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={`/illustrations/${theme.id}/hero.png`}
             alt={theme.name}
-            className="absolute inset-0 w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover object-top"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
         </>
       ) : (
+        /* No illustration yet — rich gradient + large emoji bottom-right */
         <div className={`absolute inset-0 bg-gradient-to-br ${theme.color}`}>
-          <div className="absolute inset-0 flex items-center justify-center opacity-30">
-            <span className="text-7xl">{theme.emoji}</span>
-          </div>
+          <span className="absolute bottom-3 right-3 text-7xl drop-shadow-lg leading-none select-none">
+            {theme.emoji}
+          </span>
         </div>
       )}
 
-      {/* Label */}
       <div className="relative p-3">
-        <p className="font-black text-white text-sm leading-tight drop-shadow">{theme.name}</p>
+        <p className="font-black text-white text-sm leading-tight drop-shadow-sm">{theme.name}</p>
         <p className="text-white/70 text-[10px] font-bold">Memory Match</p>
       </div>
     </Link>
@@ -215,22 +213,51 @@ function AdventureCard({ theme }: { theme: Theme }) {
 
 function SavedGameCard({ game }: { game: Game }) {
   const content = game.content as Record<string, string>
-  const theme = THEMES.find(t => t.id === content?.theme)
+  const themeId = content?.theme
+  const theme = THEMES.find(t => t.id === themeId)
+  const hasHero = theme && ILLUSTRATED_THEMES.has(theme.id)
+  const gameLabel = game.template_type.replace('_', ' ')
+
   return (
     <Link
       href={`/builder/${game.id}`}
-      className="group rounded-2xl border border-gray-100 bg-white p-3 hover:border-violet-300 hover:shadow-lg transition-all"
+      className="group relative rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all hover:-translate-y-0.5 min-h-[130px] flex flex-col justify-end"
     >
-      <div className={`mb-2 aspect-video rounded-xl flex items-center justify-center overflow-hidden bg-gradient-to-br ${theme?.color ?? 'from-gray-200 to-gray-300'}`}>
-        {game.thumbnail_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={game.thumbnail_url} alt={game.title} className="w-full h-full object-cover" />
-        ) : (
-          <span className="text-4xl">{theme?.emoji ?? '🎮'}</span>
+      {/* Background */}
+      {game.thumbnail_url ? (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={game.thumbnail_url} alt={game.title} className="absolute inset-0 w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+        </>
+      ) : hasHero ? (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={`/illustrations/${theme!.id}/hero.png`}
+            alt={theme!.name}
+            className="absolute inset-0 w-full h-full object-cover object-top"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
+        </>
+      ) : (
+        <div className={`absolute inset-0 bg-gradient-to-br ${theme?.color ?? 'from-gray-400 to-gray-600'}`}>
+          <span className="absolute bottom-3 right-3 text-6xl drop-shadow-lg leading-none select-none opacity-80">
+            {theme?.emoji ?? '🎮'}
+          </span>
+        </div>
+      )}
+
+      {/* Game type badge + title */}
+      <div className="relative p-3">
+        <span className="inline-block text-[9px] font-black text-white/80 bg-white/25 rounded-full px-2 py-0.5 capitalize mb-1.5">
+          {gameLabel}
+        </span>
+        <p className="font-black text-white text-sm leading-tight line-clamp-2 drop-shadow-sm">{game.title}</p>
+        {content?.childName && (
+          <p className="text-white/70 text-[10px] font-bold mt-0.5">for {content.childName}</p>
         )}
       </div>
-      <p className="font-bold text-gray-900 text-sm group-hover:text-violet-600 leading-tight truncate">{game.title}</p>
-      {content?.childName && <p className="text-[10px] text-violet-500 font-bold mt-0.5">for {content.childName}</p>}
     </Link>
   )
 }

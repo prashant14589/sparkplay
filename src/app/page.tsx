@@ -9,6 +9,8 @@ import { createClient } from '@/lib/supabase/client'
 import { getProgress, setChildName as saveChildName, type Progress } from '@/lib/progress'
 import { recordGameForQuest } from '@/lib/quests'
 
+const ILLUSTRATED_THEMES = new Set(['animals', 'dinos', 'unicorns', 'ocean'])
+
 const DEFAULT_AGE: AgeGroupId = '4-6'
 
 export default function HomePage() {
@@ -245,8 +247,19 @@ export default function HomePage() {
           {/* Themed header */}
           <div className={`bg-gradient-to-r ${activeTheme.color} px-5 py-4 flex items-center justify-between`}>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-xl">
-                🃏
+              <div className="w-10 h-10 rounded-xl overflow-hidden shadow-md">
+                {ILLUSTRATED_THEMES.has(activeTheme.id) ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={`/illustrations/${activeTheme.id}/hero.png`}
+                    alt={activeTheme.name}
+                    className="w-full h-full object-cover object-top"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-white/20 flex items-center justify-center text-xl">
+                    {activeTheme.emoji}
+                  </div>
+                )}
               </div>
               <div>
                 <h2 className="font-black text-white text-base leading-tight">Memory Match</h2>
