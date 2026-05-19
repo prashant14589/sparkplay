@@ -112,29 +112,16 @@ export default function LevelComplete({
       {/* Content */}
       <div className="relative z-10 w-full max-w-sm text-center animate-slide-up">
 
-        {/* Character / celebration art — commissioned illustration or Twemoji fallback */}
+        {/* Character art — always use hero (animal only, no human = no gender mismatch) */}
         <div className="mb-4 flex justify-center">
-          {isAllDone ? (
-            /* All levels complete → use hero illustration */
-            <IllustrationImage
-              src={themeId ? getHeroIllustration(themeId) : null}
-              alt="Champion"
-              size={140}
-              fallbackEmoji={themeEmoji || '🏆'}
-              skeleton
-              className="drop-shadow-xl"
-            />
-          ) : (
-            /* Level complete → use celebration scene illustration */
-            <IllustrationImage
-              src={themeId ? getCelebrationIllustration(themeId) : null}
-              alt="Level complete celebration"
-              size={200}
-              fallbackEmoji={themeEmoji || '🎉'}
-              skeleton
-              className="drop-shadow-xl rounded-2xl"
-            />
-          )}
+          <IllustrationImage
+            src={themeId ? getHeroIllustration(themeId) : null}
+            alt={isAllDone ? 'Champion' : 'Level complete'}
+            size={isAllDone ? 160 : 180}
+            fallbackEmoji={themeEmoji || '🎉'}
+            skeleton
+            className="drop-shadow-xl rounded-3xl"
+          />
         </div>
 
         {/* Headline */}
@@ -150,16 +137,16 @@ export default function LevelComplete({
             : `You completed Level ${level} · ${moves} move${moves !== 1 ? 's' : ''}`}
         </p>
         {buddyPhrase && (
-          <div className="flex items-center justify-center gap-2 mb-5">
-            <span className="text-2xl animate-bounce">{buddy!.emoji}</span>
-            <div className="bg-violet-50 border border-violet-100 rounded-2xl px-3 py-1.5">
-              <p className="text-sm font-black text-violet-700">{buddyPhrase}</p>
+          <div className="flex flex-col items-center gap-2 mb-5">
+            <span className="text-6xl animate-bounce leading-none">{buddy!.emoji}</span>
+            <div className="bg-gradient-to-r from-violet-50 to-purple-50 border border-violet-200 rounded-3xl px-5 py-2.5 shadow-sm">
+              <p className="text-base font-black text-violet-700">{buddyPhrase}</p>
             </div>
           </div>
         )}
 
         {/* Reward cards */}
-        <div className={`flex gap-3 justify-center mb-7 transition-all duration-500 ${rewardsVisible ? 'opacity-100' : 'opacity-0 translate-y-4'}`}>
+        <div className={`flex gap-4 justify-center mb-7 transition-all duration-500 ${rewardsVisible ? 'opacity-100' : 'opacity-0 translate-y-4'}`}>
           <RewardCard
             emoji="🪙"
             value={`+${coins}`}
@@ -251,7 +238,7 @@ function RewardCard({
 }) {
   return (
     <div
-      className={`flex flex-col items-center rounded-2xl border-2 ${bg} ${border} px-4 py-3 min-w-[80px] transition-all duration-500`}
+      className={`flex flex-col items-center rounded-2xl border-2 ${bg} ${border} px-5 py-3 min-w-[90px] transition-all duration-500`}
       style={{
         opacity: visible ? 1 : 0,
         transform: visible ? 'scale(1)' : 'scale(0.6) rotate(-10deg)',
