@@ -25,6 +25,13 @@ export default function HomePage() {
   const [activeTab, setActiveTab] = useState('games')
 
   useEffect(() => {
+    // Pre-select theme from adventure picker link e.g. /?theme=dinos
+    const themeParam = new URLSearchParams(window.location.search).get('theme')
+    if (themeParam) {
+      const found = getThemesForAge(ageGroup).find(t => t.id === themeParam)
+      if (found) { setActiveTheme(found); setGameKey(k => k + 1) }
+    }
+
     const supabase = createClient()
     supabase.auth.getUser().then(({ data: { user } }) => setIsAuthenticated(!!user))
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {

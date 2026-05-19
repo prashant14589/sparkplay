@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { type Theme, THEMES } from '@/lib/themes'
 import { Sounds } from '@/lib/sounds'
+import { recordGameForQuest } from '@/lib/quests'
 import {
   buildGrid,
   getWordsForTheme,
@@ -140,6 +141,7 @@ export default function WordSearch({
         const r = recordCompletion('word_search', activeTheme.id, ageGroup, level, finalMoves, placed.length)
         setCompletionResult({ stars: r.stars, coins: r.coinsEarned, newBadges: r.newBadges, streak: r.streak })
         setDone(true)
+        recordGameForQuest('word_search')
         onLevelComplete?.(level, finalMoves)
       }
     } else {

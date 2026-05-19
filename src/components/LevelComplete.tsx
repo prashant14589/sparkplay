@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Badge } from '@/lib/progress'
 import { Sounds } from '@/lib/sounds'
+import { getActiveBuddy, calcXP, calcLevel, randomPhrase } from '@/lib/buddy'
+import { getProgress } from '@/lib/progress'
 import GameEmoji from '@/components/GameEmoji'
 import IllustrationImage from '@/components/IllustrationImage'
 import { getCelebrationIllustration, getHeroIllustration } from '@/lib/illustrations'
@@ -61,6 +63,10 @@ export default function LevelComplete({
   const [btnVisible, setBtnVisible] = useState(false)
   const isAllDone = level >= totalLevels
   const name = childName?.trim()
+
+  const p = typeof window !== 'undefined' ? getProgress() : null
+  const buddy = p ? getActiveBuddy(calcLevel(calcXP(p.totalStars, p.totalCoins))) : null
+  const buddyPhrase = buddy ? randomPhrase(buddy, 'win') : null
 
   function handleBackToHome() {
     onReplay()           // reset game state / close overlay
@@ -138,11 +144,19 @@ export default function LevelComplete({
             : isAllDone ? 'You\'re a Champion! 🏆' : 'Amazing job! 🎉'
           }
         </h1>
-        <p className="text-gray-400 font-semibold mb-6 text-sm">
+        <p className="text-gray-400 font-semibold mb-3 text-sm">
           {isAllDone
             ? `You completed all ${totalLevels} levels!`
             : `You completed Level ${level} · ${moves} move${moves !== 1 ? 's' : ''}`}
         </p>
+        {buddyPhrase && (
+          <div className="flex items-center justify-center gap-2 mb-5">
+            <span className="text-2xl animate-bounce">{buddy!.emoji}</span>
+            <div className="bg-violet-50 border border-violet-100 rounded-2xl px-3 py-1.5">
+              <p className="text-sm font-black text-violet-700">{buddyPhrase}</p>
+            </div>
+          </div>
+        )}
 
         {/* Reward cards */}
         <div className={`flex gap-3 justify-center mb-7 transition-all duration-500 ${rewardsVisible ? 'opacity-100' : 'opacity-0 translate-y-4'}`}>

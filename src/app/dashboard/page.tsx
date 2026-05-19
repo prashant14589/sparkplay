@@ -6,7 +6,9 @@ import { Game } from '@/types'
 import { getProgress, type Progress, type Badge } from '@/lib/progress'
 import { THEMES, type Theme } from '@/lib/themes'
 import { getDailyQuest, getQuestProgress, isQuestComplete } from '@/lib/quests'
+import { calcXP, calcLevel, xpToNextLevel } from '@/lib/buddy'
 import GameEmoji from '@/components/GameEmoji'
+import BuddyWidget from '@/components/BuddyWidget'
 
 // Themes that have hero illustrations ready
 const ILLUSTRATED_THEMES = new Set(['animals', 'dinos', 'unicorns', 'ocean'])
@@ -30,6 +32,9 @@ export default function DashboardPage() {
   const quest = getDailyQuest()
   const childName = progress?.childName || null
   const earnedBadges = progress?.badges.filter(b => b.earned) ?? []
+  const xp = calcXP(progress?.totalStars ?? 0, progress?.totalCoins ?? 0)
+  const level = calcLevel(xp)
+  const xpBar = xpToNextLevel(xp)
 
   return (
     <div className="space-y-6">
@@ -40,39 +45,54 @@ export default function DashboardPage() {
         <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full bg-white/10" />
         <div className="absolute -bottom-4 -left-4 w-20 h-20 rounded-full bg-white/10" />
 
-        <div className="relative flex items-center justify-between">
-          <div>
-            <p className="text-white/70 text-sm font-bold mb-0.5">Welcome back!</p>
-            <h1 className="text-2xl font-black leading-tight">
-              {childName ? `Hi ${childName}! 👋` : 'Hi there! 👋'}
-            </h1>
-            <p className="text-white/80 text-sm font-semibold mt-1">
-              🦕 Rexy is ready to play!
-            </p>
-          </div>
-
-          <div className="flex flex-col items-center gap-1.5">
-            <div className="flex items-center gap-3 bg-white/20 rounded-2xl px-4 py-2.5">
+        <div className="relative space-y-4">
+          {/* Top row: greeting + stats */}
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-white/70 text-sm font-bold mb-0.5">Welcome back!</p>
+              <h1 className="text-2xl font-black leading-tight">
+                {childName ? `Hi ${childName}! 👋` : 'Hi there! 👋'}
+              </h1>
+              <p className="text-white/60 text-xs font-semibold mt-0.5">
+                Explorer · Level {level}
+              </p>
+            </div>
+            <div className="flex items-center gap-2.5 bg-white/20 rounded-2xl px-3 py-2 shrink-0">
               <div className="text-center">
-                <div className="text-xl font-black">{progress?.totalCoins ?? 0}</div>
-                <div className="text-[10px] text-white/70 font-bold">🪙 Coins</div>
+                <div className="text-base font-black">{progress?.totalCoins ?? 0}</div>
+                <div className="text-[9px] text-white/70 font-bold">🪙</div>
               </div>
-              <div className="w-px h-8 bg-white/30" />
+              <div className="w-px h-6 bg-white/30" />
               <div className="text-center">
-                <div className="text-xl font-black">{progress?.totalStars ?? 0}</div>
-                <div className="text-[10px] text-white/70 font-bold">⭐ Stars</div>
+                <div className="text-base font-black">{progress?.totalStars ?? 0}</div>
+                <div className="text-[9px] text-white/70 font-bold">⭐</div>
               </div>
               {(progress?.streak ?? 0) >= 2 && (
                 <>
-                  <div className="w-px h-8 bg-white/30" />
+                  <div className="w-px h-6 bg-white/30" />
                   <div className="text-center">
-                    <div className="text-xl font-black">{progress!.streak}</div>
-                    <div className="text-[10px] text-white/70 font-bold">🔥 Streak</div>
+                    <div className="text-base font-black">{progress!.streak}</div>
+                    <div className="text-[9px] text-white/70 font-bold">🔥</div>
                   </div>
                 </>
               )}
             </div>
           </div>
+
+          {/* XP bar */}
+          <div>
+            <div className="flex justify-between text-[10px] text-white/60 font-bold mb-1">
+              <span>{xpBar.current} XP</span>
+              <span>{xpBar.needed} XP to Lv.{Math.min(10, level + 1)}</span>
+            </div>
+            <div className="h-2 bg-white/20 rounded-full overflow-hidden">
+              <div className="h-full bg-white/70 rounded-full transition-all duration-700"
+                style={{ width: `${xpBar.pct}%` }} />
+            </div>
+          </div>
+
+          {/* Buddy row */}
+          <BuddyWidget size="sm" showSelector />
         </div>
       </div>
 

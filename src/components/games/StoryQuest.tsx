@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { STORIES, getStoryById, interpolate, type Story, type StoryScene } from '@/lib/stories'
 import { recordCompletion, type Badge } from '@/lib/progress'
+import { recordGameForQuest } from '@/lib/quests'
 import LevelComplete from '@/components/LevelComplete'
 import DiceBearAvatar from '@/components/DiceBearAvatar'
 import GameEmoji from '@/components/GameEmoji'
@@ -116,6 +117,7 @@ export default function StoryQuest({ storyId, childName, theme = 'animals', ageG
       const r = recordCompletion('story', selectedTheme, ageGroup, 1, newChoices, 4)
       setResult({ stars: r.stars, coins: r.coinsEarned, newBadges: r.newBadges, streak: r.streak })
       setGameState('complete')
+      recordGameForQuest('story')
     }
   }
 

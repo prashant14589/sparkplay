@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { type Theme, THEMES } from '@/lib/themes'
 import { Sounds } from '@/lib/sounds'
+import { recordGameForQuest } from '@/lib/quests'
 import {
   pickQuestionsForGame,
   interpolateQuestion,
@@ -83,6 +84,7 @@ export default function QuizGame({
         )
         setCompletionResult({ stars: r.stars, coins: r.coinsEarned, newBadges: r.newBadges, streak: r.streak })
         setDone(true)
+        recordGameForQuest('quiz')
         onLevelComplete?.(level, wrongAnswers)
       } else {
         setQIndex((i) => i + 1)
