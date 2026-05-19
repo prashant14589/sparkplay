@@ -3,6 +3,9 @@ import PrintButton from './PrintButton'
 import { getThemeById } from '@/lib/themes'
 import { getStoryById, interpolate } from '@/lib/stories'
 import { notFound, redirect } from 'next/navigation'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = { title: 'Print — SparkPlay' }
 
 interface Props {
   params: Promise<{ id: string }>
@@ -33,57 +36,45 @@ export default async function PrintPage({ params }: Props) {
   const displayName = childName || 'Your child'
 
   return (
-    <html lang="en">
-      <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>{game.title} — SparkPlay</title>
-        <style>{`
-          * { box-sizing: border-box; margin: 0; padding: 0; }
-          body { font-family: system-ui, -apple-system, sans-serif; background: white; color: #111; }
-          .page { max-width: 680px; margin: 0 auto; padding: 32px 24px; }
-          .header { text-align: center; margin-bottom: 32px; border-bottom: 2px solid #e5e7eb; padding-bottom: 24px; }
-          .logo { font-size: 14px; color: #6d28d9; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 8px; }
-          h1 { font-size: 28px; font-weight: 800; color: #111; margin-bottom: 8px; }
-          .subtitle { font-size: 15px; color: #6b7280; }
-          .meta { display: flex; gap: 16px; justify-content: center; margin-top: 12px; flex-wrap: wrap; }
-          .tag { background: #f3f4f6; border-radius: 999px; padding: 4px 12px; font-size: 12px; font-weight: 600; color: #374151; }
-
-          /* Card grid for Memory Match */
-          .card-grid { display: grid; gap: 10px; margin: 24px auto; justify-content: center; }
-          .card { border: 2px solid #d1d5db; border-radius: 12px; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 36px; background: #f9fafb; }
-          .card-blank { border: 2px dashed #d1d5db; border-radius: 12px; aspect-ratio: 1; background: white; }
-
-          /* Maze grid */
-          .maze-placeholder { border: 3px solid #374151; display: inline-block; padding: 20px; border-radius: 12px; text-align: center; margin: 16px auto; background: #f9fafb; }
-
-          /* Story */
-          .story-scene { border: 2px solid #e5e7eb; border-radius: 16px; padding: 20px; margin-bottom: 16px; }
-          .scene-emoji { font-size: 48px; text-align: center; margin-bottom: 12px; }
-          .scene-title { font-size: 18px; font-weight: 700; color: #111; margin-bottom: 8px; }
-          .scene-text { font-size: 15px; color: #374151; line-height: 1.6; margin-bottom: 12px; }
-          .choices { margin-top: 12px; }
-          .choice { border: 2px solid #8b5cf6; border-radius: 10px; padding: 10px 16px; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: #6d28d9; display: flex; align-items: center; gap: 8px; }
-
-          /* Puzzle */
-          .puzzle-grid { display: grid; gap: 6px; margin: 24px auto; justify-content: center; border: 4px solid #d1d5db; border-radius: 12px; padding: 8px; display: inline-grid; }
-          .tile { border: 2px solid #d1d5db; border-radius: 8px; width: 72px; height: 72px; display: flex; align-items: center; justify-content: center; font-size: 32px; background: #f9fafb; }
-
-          /* Footer */
-          .footer { margin-top: 40px; text-align: center; font-size: 12px; color: #9ca3af; border-top: 1px solid #e5e7eb; padding-top: 20px; }
-          .instructions { background: #f3f4f6; border-radius: 12px; padding: 16px; margin: 16px 0; }
-          .instructions h3 { font-size: 14px; font-weight: 700; color: #374151; margin-bottom: 8px; }
-          .instructions p { font-size: 13px; color: #6b7280; line-height: 1.6; }
-
-          @media print {
-            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .no-print { display: none !important; }
-            @page { margin: 1.5cm; }
-          }
-        `}</style>
-      </head>
-      <body>
-        <div className="page">
+    <>
+      {/*
+        Inline styles for print page.
+        NOTE: <html>/<head>/<body> are intentionally omitted — the root layout
+        provides them. Placing them here caused nested <html> which breaks hydration.
+        Browsers accept <style> anywhere in the DOM; @media print rules still apply.
+      */}
+      <style>{`
+        .print-page { max-width: 680px; margin: 0 auto; padding: 32px 24px; font-family: system-ui, -apple-system, sans-serif; color: #111; }
+        .print-page .header { text-align: center; margin-bottom: 32px; border-bottom: 2px solid #e5e7eb; padding-bottom: 24px; }
+        .print-page .logo { font-size: 14px; color: #6d28d9; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 8px; }
+        .print-page h1 { font-size: 28px; font-weight: 800; color: #111; margin-bottom: 8px; }
+        .print-page .subtitle { font-size: 15px; color: #6b7280; }
+        .print-page .meta { display: flex; gap: 16px; justify-content: center; margin-top: 12px; flex-wrap: wrap; }
+        .print-page .tag { background: #f3f4f6; border-radius: 999px; padding: 4px 12px; font-size: 12px; font-weight: 600; color: #374151; }
+        .print-page .card-grid { display: grid; gap: 10px; margin: 24px auto; justify-content: center; }
+        .print-page .card { border: 2px solid #d1d5db; border-radius: 12px; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 36px; background: #f9fafb; }
+        .print-page .card-blank { border: 2px dashed #d1d5db; border-radius: 12px; aspect-ratio: 1; background: white; }
+        .print-page .story-scene { border: 2px solid #e5e7eb; border-radius: 16px; padding: 20px; margin-bottom: 16px; }
+        .print-page .scene-emoji { font-size: 48px; text-align: center; margin-bottom: 12px; }
+        .print-page .scene-title { font-size: 18px; font-weight: 700; color: #111; margin-bottom: 8px; }
+        .print-page .scene-text { font-size: 15px; color: #374151; line-height: 1.6; margin-bottom: 12px; }
+        .print-page .choices { margin-top: 12px; }
+        .print-page .choice { border: 2px solid #8b5cf6; border-radius: 10px; padding: 10px 16px; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: #6d28d9; display: flex; align-items: center; gap: 8px; }
+        .print-page .puzzle-grid { gap: 6px; margin: 24px auto; border: 4px solid #d1d5db; border-radius: 12px; padding: 8px; display: inline-grid; }
+        .print-page .tile { border: 2px solid #d1d5db; border-radius: 8px; width: 72px; height: 72px; display: flex; align-items: center; justify-content: center; font-size: 32px; background: #f9fafb; }
+        .print-page .footer { margin-top: 40px; text-align: center; font-size: 12px; color: #9ca3af; border-top: 1px solid #e5e7eb; padding-top: 20px; }
+        .print-page .instructions { background: #f3f4f6; border-radius: 12px; padding: 16px; margin: 16px 0; }
+        .print-page .instructions h3 { font-size: 14px; font-weight: 700; color: #374151; margin-bottom: 8px; }
+        .print-page .instructions p { font-size: 13px; color: #6b7280; line-height: 1.6; }
+        @media print {
+          body { -webkit-print-color-adjust: exact; print-color-adjust: exact; background: white; }
+          /* Hide root layout chrome (cookie banner, analytics, nav) */
+          .fixed, nav, [data-analytics] { display: none !important; }
+          .no-print { display: none !important; }
+          @page { margin: 1.5cm; }
+        }
+      `}</style>
+      <div className="print-page">
           {/* Top bar — hidden when printing */}
           <div className="no-print" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
             <a
@@ -149,10 +140,7 @@ export default async function PrintPage({ params }: Props) {
             <p style={{ marginTop: 4 }}>Print this page and have fun! ✂️</p>
           </div>
         </div>
-
-        <script dangerouslySetInnerHTML={{ __html: '' }} />
-      </body>
-    </html>
+    </>
   )
 }
 
