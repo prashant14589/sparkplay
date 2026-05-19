@@ -7,6 +7,7 @@ import SignupModal from '@/components/SignupModal'
 import { THEMES, AGE_GROUPS, getThemesForAge, type Theme, type AgeGroupId } from '@/lib/themes'
 import { createClient } from '@/lib/supabase/client'
 import { getProgress, setChildName as saveChildName, type Progress } from '@/lib/progress'
+import { recordGameForQuest } from '@/lib/quests'
 
 const DEFAULT_AGE: AgeGroupId = '4-6'
 
@@ -61,6 +62,7 @@ export default function HomePage() {
   const handleLevelComplete = useCallback((level: number, moves: number) => {
     setCompletedMoves(moves)
     setProgress(getProgress())
+    recordGameForQuest('memory')
     if (level === 1 && !isAuthenticated) setShowModal(true)
   }, [isAuthenticated])
 
@@ -255,7 +257,7 @@ export default function HomePage() {
             )}
           </div>
 
-          <div className="bg-white p-4">
+          <div className={`${activeTheme.bg} p-4`}>
             <MemoryMatch
               key={gameKey}
               theme={activeTheme}

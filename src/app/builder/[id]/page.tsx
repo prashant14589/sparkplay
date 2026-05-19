@@ -13,6 +13,7 @@ import QuizGame from '@/components/games/QuizGame'
 import WordSearch from '@/components/games/WordSearch'
 import PuzzleMaker from '@/components/games/PuzzleMaker'
 import PaywallGate from '@/components/PaywallGate'
+import { recordGameForQuest } from '@/lib/quests'
 
 function GamePreview({ game }: { game: Game }) {
   const content = game.content as Record<string, string>
@@ -23,14 +24,14 @@ function GamePreview({ game }: { game: Game }) {
   switch (game.template_type) {
     case 'memory':
       return (
-        <div className="w-full max-w-sm mx-auto">
-          <MemoryMatch theme={theme} ageGroup={ageGroup} childName={childName} onLevelComplete={() => {}} />
+        <div className={`w-full max-w-sm mx-auto rounded-2xl overflow-hidden ${theme.bg}`}>
+          <MemoryMatch theme={theme} ageGroup={ageGroup} childName={childName} onLevelComplete={() => recordGameForQuest('memory')} />
         </div>
       )
     case 'maze':
-      return <MazeGame theme={theme} ageGroup={ageGroup} childName={childName} />
+      return <MazeGame theme={theme} ageGroup={ageGroup} childName={childName} onWin={() => recordGameForQuest('maze')} />
     case 'puzzle':
-      return <SlidingPuzzle theme={theme} ageGroup={ageGroup} childName={childName} />
+      return <SlidingPuzzle theme={theme} ageGroup={ageGroup} childName={childName} onWin={() => recordGameForQuest('puzzle')} />
     case 'story':
       return (
         <PaywallGate featureName="Story Quest" featureEmoji="📖">
