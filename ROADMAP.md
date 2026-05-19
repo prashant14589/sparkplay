@@ -1,98 +1,150 @@
-# SparkPlay — Remaining TODOs
+# SparkPlay — Roadmap & Remaining TODOs
 
-Phase 4 core is done (rate-limiting, legal, Stripe, analytics). Below are the next items.
+Last updated: 2026-05-19
 
 ---
 
-## 🇮🇳 India Payments — Razorpay + UPI
+## 🔴 Before charging real money (do in order)
 
-**Why:** Most of the target audience is in India. Stripe's India support for subscriptions is
-limited and does not natively support UPI, NetBanking, or wallets.
+### 1. Verify Supabase migration on live project
+Run `supabase/migrations/verify_001.sql` in the Supabase SQL editor.
+Confirms `profiles` and `ai_usage` tables exist. Without them:
+- Everyone is treated as free tier (subscription checks silently fail)
+- AI usage quota enforcement doesn't work
+
+### 2. Stripe → live mode
+1. Stripe dashboard → switch to **live** mode
+2. Complete KYC (PAN + Indian bank account)
+3. Re-create Family (₹499/mo) + Pro (₹999/mo) products in live mode
+4. Update Vercel env vars: `STRIPE_SECRET_KEY`, `STRIPE_FAMILY_PRICE_ID`, `STRIPE_PRO_PRICE_ID`
+5. Re-register webhook → update `STRIPE_WEBHOOK_SECRET`
+
+### 3. Razorpay + UPI (India — critical)
+Stripe doesn't support UPI or NetBanking. Indian audience can't pay without this.
 
 **Steps:**
-
-1. Sign up at https://razorpay.com → get test + live API keys
-2. `npm install razorpay`
-3. Add env vars (already in `.env.local.example`):
-   ```
-   RAZORPAY_KEY_ID=rzp_test_...
-   RAZORPAY_KEY_SECRET=...
-   NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_test_...
-   ```
-4. Create a `POST /api/razorpay/checkout` route:
-   - Creates a Razorpay Order (`razorpay.orders.create`)
-   - Returns `{ orderId, keyId, amount, currency: 'INR' }` to client
-5. On the pricing page, detect Indian users (via `Intl.DateTimeFormat().resolvedOptions().timeZone`)
-   and open the Razorpay checkout modal instead of redirecting to Stripe.
-6. Create a `POST /api/razorpay/webhook` route to handle `payment.captured` and
-   `subscription.activated`, then call the same `updateSubscription` helper from
-   `src/app/api/stripe/webhook/route.ts`.
-
-**INR pricing to configure in Razorpay:**
-- Family: ₹499/mo
-- Pro: ₹999/mo
-
-**Reference:** https://razorpay.com/docs/payment-gateway/server-integration/nodejs/
-
----
-
-## 📱 Mobile App — Play Store + App Store
-
-**Goal:** Ship SparkPlay as a native app to reach parents who discover via app stores.
-
-### Option A — PWA (fastest, 1–2 days)
-- SparkPlay already works on mobile. Add `public/manifest.json` + service worker.
-- Submit to Play Store as a TWA (Trusted Web Activity) — Google allows PWAs natively.
-- iOS: add to home screen from Safari (no App Store submission needed for MVP).
-- Tools: `next-pwa` package, Bubblewrap CLI for TWA packaging.
-
-### Option B — React Native (most native, 4–6 weeks)
-- Extract game logic from `src/lib/` — it's platform-agnostic (no DOM).
-- Wrap games with React Native views.
-- Use `expo` for easy iOS + Android builds.
-- Shared API layer (already REST + Supabase).
-
-**Recommended start:** Option A (PWA → TWA) — gets you on Play Store in 2 days with zero
-new code. iOS home screen shortcut covers most Indian mobile users on Chrome/Safari.
-
-**Steps for PWA/TWA:**
-1. Add `src/app/manifest.json` with icons, theme_color, display: standalone
-2. Add `<link rel="manifest" href="/manifest.json" />` to `src/app/layout.tsx`
-3. Install `next-pwa`: `npm install next-pwa`
-4. Configure in `next.config.ts`
-5. Generate app icons (512×512, 192×192) — use the SparkPlay violet gradient
-6. Test: Chrome DevTools → Application → Manifest
-7. Build TWA: `npx @bubblewrap/cli init --manifest https://sparkplay-nu.vercel.app/manifest.json`
-8. Sign APK and upload to Play Store (free $25 one-time developer fee)
-
----
-
-## 🎨 Remaining Illustrations (TODO 5)
-
-**Status:** 65 illustrations done (animals, dinos, unicorns, ocean partial).
-**Remaining:** space, superheroes, farm, food (~44 images, ~$1.76 at current OpenAI pricing).
-
-**Prerequisites:**
-- Top up OpenAI account at https://platform.openai.com/settings/organization/billing
-- Ensure `OPENAI_API_KEY` is set in `.env.local`
-
-**Run per theme (one at a time to monitor):**
 ```bash
-npx tsx scripts/generate-illustrations.ts space
-npx tsx scripts/generate-illustrations.ts superheroes
-npx tsx scripts/generate-illustrations.ts farm
-npx tsx scripts/generate-illustrations.ts food
+npm install razorpay
 ```
+Add to `.env.local`:
+```
+RAZORPAY_KEY_ID=rzp_live_...
+RAZORPAY_KEY_SECRET=...
+NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_live_...
+```
+Create routes:
+- `POST /api/razorpay/checkout` — `razorpay.orders.create({ amount: 49900, currency: 'INR' })`
+  → return `{ orderId, keyId, amount }` to client
+- `POST /api/razorpay/webhook` — handle `payment.captured`, call same `updateSubscription`
+  helper in `src/app/api/stripe/webhook/route.ts`
 
-Each theme takes ~2 min and costs ~$0.80.
-Images land in `public/illustrations/{theme}/`.
+On `/pricing` page: detect India via `Intl.DateTimeFormat().resolvedOptions().timeZone`
+→ open Razorpay checkout modal for INR, redirect to Stripe for other currencies.
+
+TODO comments already in `src/app/api/stripe/checkout/route.ts` with full steps.
+Reference: https://razorpay.com/docs/payment-gateway/server-integration/nodejs/
 
 ---
 
-## 🔮 Phase 5 — Growth (after monetisation is live)
+## 🟡 Phase 5 — Growth
 
-- Share links: `/play/[gameId]` — public URL to play a friend's game
-- Email onboarding: welcome email + day-3 nudge (use Resend or Supabase Edge Functions)
-- Parent dashboard: per-child progress view (mockup screen 10)
-- Coloring Book game: template exists at `src/components/games/ColoringBook` (shows "coming soon")
-- Runner game / Pet companion: needs Phaser 4 + sprite art (deferred)
+### 4. Share links `/play/[gameId]`
+Public URL that lets anyone play a game without logging in.
+- New route `src/app/play/[id]/page.tsx` — fetch game by ID (no auth), render GamePreview
+- Add "Copy share link" button to builder sidebar
+- High virality: parent sends to grandparent → grandparent plays → discovers SparkPlay
+
+### 5. Email onboarding
+- Welcome email on signup (use Resend or Supabase Edge Functions)
+- Day-3 nudge: "Your child hasn't played in 3 days — new dinosaur adventure waiting!"
+- Triggered by Supabase auth webhook or a daily cron job
+
+### 6. Parent dashboard
+- Per-child progress: stars/coins/badges/streak per child name
+- Currently all progress is global localStorage — need per-child localStorage keys
+- Shows which games child played, time spent, levels completed
+
+### 7. PWA → Play Store (2 days)
+SparkPlay already works on mobile. Wrapping as a TWA gets it on Google Play instantly.
+
+**Steps:**
+1. Add `public/manifest.json`:
+   ```json
+   { "name": "SparkPlay", "short_name": "SparkPlay", "display": "standalone",
+     "theme_color": "#7c3aed", "background_color": "#ffffff",
+     "start_url": "/", "icons": [{ "src": "/icon-512.png", "sizes": "512x512" }] }
+   ```
+2. Add `<link rel="manifest" href="/manifest.json" />` to `src/app/layout.tsx`
+3. `npm install next-pwa` → configure in `next.config.ts`
+4. Generate icons (512×512, 192×192) — violet gradient ✦ logo
+5. Test: Chrome DevTools → Application → Manifest
+6. Build TWA: `npx @bubblewrap/cli init --manifest https://sparkplay-nu.vercel.app/manifest.json`
+7. Sign APK → upload to Play Store ($25 one-time developer fee)
+8. iOS: Safari "Add to Home Screen" — no App Store submission needed for MVP
+
+---
+
+## 🟢 Sprint 4 — Polish & Depth
+
+### 8. Competitive / personal best for 8–12
+- Show "Your best: 14 moves" prominently before game starts (localStorage)
+- "Beat your record" mode — subtle pressure, right for this age group
+- Affects: MemoryMatch, WordSearch, SlidingPuzzle, MazeGame, NumberMerge
+
+### 9. Quiz question restructure by age
+- 200 questions currently tagged only by level (1-5)
+- Add `minAge / maxAge` fields to `QuizQuestion` type in `src/lib/quiz.ts`
+- Re-tag each question so 4-6 gets genuinely simpler vocabulary, 8-12 gets real trivia
+- Large effort (~1 day), deferred to Sprint 5
+
+### 10. Buddy visual art
+- Replace emoji buddy (🦕🦄🐶⚡) with illustrated characters
+- Commission or generate 4 character illustrations (front-facing, celebrate pose)
+- Use IllustrationImage component pattern already established
+- High emotional impact — makes buddies feel like real characters
+
+### 11. Animated theme environments
+- CSS gradient backgrounds per theme already done (Sprint 3)
+- Next level: subtle CSS animations (floating leaves for animals, stars for space)
+- No JS needed — pure CSS keyframes added to globals.css
+
+### 12. Coloring Book game
+- Template exists in TEMPLATES array, shows "coming soon" in builder
+- `src/components/games/ColoringBook` — needs implementation
+- Could use SVG paths + CSS fill for colour-by-touch mechanic
+
+---
+
+## 🔵 Sprint 5 — Bigger bets
+
+### 13. Supabase Storage for puzzle images
+- Currently: base64 image (~2-4MB) saved to `games.content.puzzleImageUrl` (JSONB)
+- Better: upload to Supabase Storage bucket `puzzle-images`, save public URL to content
+- Optimization only needed once users have many completed puzzles
+
+### 14. Runner game / Pet companion
+- Concept: Phaser 4 infinite runner + pet that grows with child
+- Needs: Phaser integration, sprite art, physics engine wiring
+- Significant scope — estimate 3-4 weeks
+- Highest engagement potential but highest effort
+
+### 15. Coloring pages as printable product (Gumroad)
+- Generate themed colouring book PDFs (8 pages per theme)
+- Use SVG outlines of the commissioned illustrations
+- Sell on Gumroad as a standalone product, link from SparkPlay
+
+---
+
+## ✅ Already done — for reference
+
+- All 8 theme illustrations complete (103 PNGs) ✅
+- Phase 4 monetisation infrastructure (Stripe sandbox, paywall, AI limits) ✅
+- Sound engine (synthesised SFX + background music) ✅
+- Buddy system with XP/levels ✅
+- Daily quest system ✅
+- Age-differentiated games (Tier 1: scenarios, vocabulary, difficulty) ✅
+- Number Merge (2048) for 8-12 ✅
+- Emotional-first home page (animated backgrounds, buddy greeting first) ✅
+- Builder illustrated game/theme tiles ✅
+- Print page fixed (hydration error, puzzle image, SparkPlay watermark) ✅
+- LevelComplete gender fix (hero.png, no human character) ✅
