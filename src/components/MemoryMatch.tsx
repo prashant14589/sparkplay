@@ -4,10 +4,14 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { type Theme, type AgeGroupId, THEMES, getLevels, getAgeTier } from '@/lib/themes'
 import { recordCompletion, getProgress, type Badge } from '@/lib/progress'
 import { Sounds } from '@/lib/sounds'
+import { getActiveBuddy, calcLevel, calcXP, randomPhrase } from '@/lib/buddy'
 import HowToPlay from '@/components/games/HowToPlay'
 import LevelComplete from '@/components/LevelComplete'
 import GameEmoji from '@/components/GameEmoji'
 import IllustrationImage from '@/components/IllustrationImage'
+import MatchParticles from '@/components/MatchParticles'
+import BuddyMatchReaction from '@/components/BuddyMatchReaction'
+import ThemeEnvironment from '@/components/ThemeEnvironment'
 import { getCardIllustration } from '@/lib/illustrations'
 
 type Card = { id: number; emoji: string; isFlipped: boolean; isMatched: boolean }
@@ -53,6 +57,9 @@ export default function MemoryMatch({
   const [justMatched, setJustMatched] = useState<Set<number>>(new Set())
   const [showToast, setShowToast] = useState(false)
   const [toastKey, setToastKey] = useState(0)
+  const [reactionActive, setReactionActive] = useState(false)
+  const [reaction, setReaction] = useState<{ emoji: string; phrase: string } | null>(null)
+  const reactionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [completionResult, setCompletionResult] = useState<{
     stars: number; coins: number; newBadges: Badge[]; streak: number
   } | null>(null)
@@ -103,6 +110,13 @@ export default function MemoryMatch({
 
     if (a.emoji === b.emoji) {
       Sounds.match()
+      // Buddy reaction — clear any in-flight timer so rapid matches don't cancel each other
+      const prog = getProgress()
+      const buddy = getActiveBuddy(calcLevel(calcXP(prog.totalStars, prog.totalCoins)))
+      setReaction({ emoji: buddy.emoji, phrase: randomPhrase(buddy, 'win') })
+      setReactionActive(true)
+      if (reactionTimerRef.current) clearTimeout(reactionTimerRef.current)
+      reactionTimerRef.current = setTimeout(() => setReactionActive(false), 1500)
       setTimeout(() => {
         setCards((prev) => prev.map((c) => (next.includes(c.id) ? { ...c, isMatched: true } : c)))
         setJustMatched(new Set(next))
@@ -229,7 +243,8 @@ export default function MemoryMatch({
         })}
       </div>
 
-      {/* Card grid */}
+      {/* Card grid — wrapped in themed living-world environment */}
+      <ThemeEnvironment themeId={activeTheme.id} className="p-3 mb-1">
       <div className="relative" ref={gridRef}>
         <div
           className="grid gap-2 mx-auto"
@@ -245,8 +260,9 @@ export default function MemoryMatch({
                 disabled={card.isMatched || locked}
                 style={{ width: cellPx, height: cellPx }}
                 className={[
-                  'rounded-2xl relative overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400',
+                  'rounded-2xl relative focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400',
                   'transition-all duration-200',
+                  isJustMatched ? 'overflow-visible' : 'overflow-hidden',
                   !card.isMatched && !card.isFlipped ? 'hover:scale-105 hover:shadow-lg active:scale-95 cursor-pointer' : '',
                   isJustMatched ? 'animate-match-pop animate-match-glow' : '',
                 ].join(' ')}
@@ -297,6 +313,7 @@ export default function MemoryMatch({
                     skeleton
                   />
                 </div>
+                <MatchParticles active={isJustMatched} themeId={activeTheme.id} />
               </button>
             )
           })}
@@ -318,8 +335,18 @@ export default function MemoryMatch({
         )}
       </div>
 
+      {/* Buddy reaction */}
+      <div className="flex justify-end mt-2 min-h-[44px] px-1">
+        <BuddyMatchReaction
+          active={reactionActive}
+          buddyEmoji={reaction?.emoji ?? '🦕'}
+          phrase={reaction?.phrase}
+        />
+      </div>
+      </ThemeEnvironment>
+
       {/* Pairs progress bar (matches mockup bottom bar) */}
-      <div className="flex items-center gap-3 mt-4 px-1">
+      <div className="flex items-center gap-3 mt-1 px-1">
         <span className="text-xs font-black text-gray-400 whitespace-nowrap">
           Pairs: {matched}/{levelCfg.pairs}
         </span>

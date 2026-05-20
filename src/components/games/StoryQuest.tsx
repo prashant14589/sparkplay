@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useCreationSteps } from '@/lib/creationSteps'
 import { STORIES, getStoryById, interpolate, type Story, type StoryScene } from '@/lib/stories'
 import { recordCompletion, type Badge } from '@/lib/progress'
 import { recordGameForQuest } from '@/lib/quests'
@@ -61,6 +62,7 @@ export default function StoryQuest({ storyId, childName, theme = 'animals', ageG
 
   const themeConfig = THEME_CONFIG[selectedTheme] ?? DEFAULT_THEME
   const displayName = childName?.trim() || ''
+  const creation = useCreationSteps('story', displayName || undefined)
 
   // Auto-fetch when storyId + theme are known (builder preview mode)
   useEffect(() => {
@@ -173,26 +175,42 @@ export default function StoryQuest({ storyId, childName, theme = 'animals', ageG
   // ── Loading state ──────────────────────────────────────────────────────────
   if (gameState === 'loading') {
     return (
-      <div className={`select-none rounded-3xl bg-gradient-to-br ${themeConfig.gradient} p-6 text-center text-white min-h-[280px] flex flex-col items-center justify-center gap-4`}>
-        {displayName ? (
-          <DiceBearAvatar seed={displayName} size={96} animated className="ring-4 ring-white/40" />
-        ) : (
-          <span className="text-7xl animate-bounce">📖</span>
-        )}
-        <div>
-          <p className="font-black text-xl">
-            Writing {displayName ? `${displayName}'s` : 'your'} story…
+      <div className={`select-none rounded-3xl bg-gradient-to-br ${themeConfig.gradient} p-6 text-center text-white min-h-[320px] flex flex-col items-center justify-center gap-5`}>
+        <div className="relative">
+          {displayName ? (
+            <DiceBearAvatar seed={displayName} size={96} animated className="ring-4 ring-white/40" />
+          ) : (
+            <span className="text-7xl animate-bounce">🦕</span>
+          )}
+          <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-white/20 backdrop-blur rounded-full flex items-center justify-center animate-spin">
+            <span className="text-white text-sm">✦</span>
+          </div>
+        </div>
+
+        <div className="space-y-1">
+          <p
+            key={creation.stepIndex}
+            className="font-black text-xl animate-slide-up"
+          >
+            {creation.text}
           </p>
-          <p className="text-white/70 text-sm font-semibold mt-1">
-            Creating a unique adventure just for {displayName || 'you'}
+          <p className="text-white/60 text-sm font-semibold">
+            A unique adventure, just for {displayName || 'you'}
           </p>
         </div>
-        <div className="flex gap-2 justify-center mt-2">
-          {[0, 1, 2].map((i) => (
+
+        {/* Step progress track */}
+        <div className="flex gap-1.5 items-center">
+          {Array.from({ length: creation.total }).map((_, i) => (
             <div
               key={i}
-              className="w-2.5 h-2.5 bg-white rounded-full animate-bounce"
-              style={{ animationDelay: `${i * 0.2}s` }}
+              className={`rounded-full transition-all duration-300 ${
+                i === creation.stepIndex
+                  ? 'w-5 h-2.5 bg-white'
+                  : i < creation.stepIndex
+                    ? 'w-2.5 h-2.5 bg-white/50'
+                    : 'w-2.5 h-2.5 bg-white/20'
+              }`}
             />
           ))}
         </div>

@@ -98,3 +98,18 @@ body {
 .animate-match-toast  { animation: matchToast   1.7s ease-out forwards; }
 .animate-slide-up     { animation: slideUp      0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
 .animate-reward-pop   { animation: rewardPop    0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+/* ─── Match particle burst ─── */
+@keyframes particleBurst {
+  0%   { transform: translate(0, 0) scale(1.4); opacity: 1; }
+  100% { transform: translate(var(--px, 0px), var(--py, 0px)) scale(0); opacity: 0; }
+}
+.animate-particle-burst { animation: particleBurst 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+
+/* ─── Buddy in-game reaction pop ─── */
+@keyframes buddyPop {
+  0%   { transform: scale(0) translateY(8px); opacity: 0; }
+  60%  { transform: scale(1.15) translateY(-2px); opacity: 1; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+.animate-buddy-pop { animation: buddyPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both; }

@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect } from 'react'
+import { useCreationSteps } from '@/lib/creationSteps'
+import { recordGameForQuest } from '@/lib/quests'
 import {
   getScenariosForAge,
   DEFAULT_DIFFICULTY_FOR_AGE,
@@ -49,6 +51,7 @@ export default function PuzzleMaker({ childName, ageGroup = '4-6', gameId, exist
   const [moves, setMoves]               = useState(0)
   const [errorMsg, setErrorMsg]         = useState('')
   const [result, setResult]             = useState<{ stars: number; coins: number; newBadges: Badge[]; streak: number } | null>(null)
+  const [genKey, setGenKey]             = useState(0)
   const boardRef = useRef<HTMLDivElement>(null)
 
   // Save completed puzzle image to Supabase so the print page can show it
@@ -69,6 +72,7 @@ export default function PuzzleMaker({ childName, ageGroup = '4-6', gameId, exist
   }, [gameState]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const displayName = childName?.trim() || ''
+  const creation = useCreationSteps('puzzle', displayName || undefined, genKey)
   const { cols, rows } = DIFFICULTY_GRID[difficulty]
   const totalPieces = cols * rows
 
@@ -78,6 +82,7 @@ export default function PuzzleMaker({ childName, ageGroup = '4-6', gameId, exist
     setSelectedScenario(scenario)
     setGameState('generating')
     setErrorMsg('')
+    setGenKey((k) => k + 1)
 
     // Check localStorage cache first
     const cacheKey = getCacheKey(displayName || 'explorer', scenario.id)
@@ -149,6 +154,7 @@ export default function PuzzleMaker({ childName, ageGroup = '4-6', gameId, exist
           const r = recordCompletion('puzzle_maker', 'custom', '4-6', 1, newMoves, totalPieces)
           setResult({ stars: r.stars, coins: r.coinsEarned, newBadges: r.newBadges, streak: r.streak })
           setGameState('complete')
+          recordGameForQuest('puzzle_maker')
         }
         return newMoves
       })
@@ -247,31 +253,48 @@ export default function PuzzleMaker({ childName, ageGroup = '4-6', gameId, exist
   // ── Generating ────────────────────────────────────────────────────────────
   if (gameState === 'generating') {
     return (
-      <div className="select-none flex flex-col items-center justify-center gap-5 py-10 text-center">
+      <div className="select-none flex flex-col items-center justify-center gap-6 py-10 text-center min-h-[320px]">
         <div className="relative">
           {displayName ? (
             <DiceBearAvatar seed={displayName} size={100} className="ring-4 ring-violet-300" animated />
           ) : (
-            <span className="text-7xl animate-bounce block">🧩</span>
+            <span className="text-7xl animate-bounce block">🦕</span>
           )}
           <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-violet-600 rounded-full flex items-center justify-center animate-spin">
             <span className="text-white text-sm">✦</span>
           </div>
         </div>
-        <div>
-          <p className="font-black text-gray-800 text-lg">
-            Drawing {displayName ? `${displayName}'s` : 'your'} puzzle…
+
+        <div className="space-y-1">
+          <p
+            key={creation.stepIndex}
+            className="font-black text-gray-800 text-lg animate-slide-up"
+          >
+            {creation.text}
           </p>
-          <p className="text-gray-400 text-sm font-semibold mt-1">
-            {selectedScenario?.label} {selectedScenario?.emoji}
-          </p>
+          {selectedScenario && (
+            <p className="text-gray-400 text-sm font-semibold">
+              {selectedScenario.emoji} {selectedScenario.label}
+            </p>
+          )}
         </div>
-        <div className="flex gap-1.5">
-          {[0, 1, 2].map(i => (
-            <div key={i} className="w-2.5 h-2.5 bg-violet-400 rounded-full animate-bounce"
-              style={{ animationDelay: `${i * 0.2}s` }} />
+
+        {/* Step progress track */}
+        <div className="flex gap-1.5 items-center">
+          {Array.from({ length: creation.total }).map((_, i) => (
+            <div
+              key={i}
+              className={`rounded-full transition-all duration-300 ${
+                i === creation.stepIndex
+                  ? 'w-5 h-2.5 bg-violet-500'
+                  : i < creation.stepIndex
+                    ? 'w-2.5 h-2.5 bg-violet-300'
+                    : 'w-2.5 h-2.5 bg-gray-200'
+              }`}
+            />
           ))}
         </div>
+
         <p className="text-xs text-gray-300">Usually takes 5–10 seconds…</p>
       </div>
     )

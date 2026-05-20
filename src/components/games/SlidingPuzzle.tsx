@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { type Theme, THEMES } from '@/lib/themes'
 import { recordCompletion, type Badge } from '@/lib/progress'
+import { recordGameForQuest } from '@/lib/quests'
 import { Sounds } from '@/lib/sounds'
 import HowToPlay from './HowToPlay'
 import LevelComplete from '@/components/LevelComplete'
@@ -105,6 +106,7 @@ export default function SlidingPuzzle({ theme, ageGroup = '4-6', childName, onWi
       const tileCount = size * size - 1   // unit for puzzle star thresholds
       const r = recordCompletion('puzzle', activeTheme.id, ageGroup, 1, moves, tileCount)
       setCompletionResult({ stars: r.stars, coins: r.coinsEarned, newBadges: r.newBadges, streak: r.streak })
+      recordGameForQuest('puzzle')
     }
   }, [tiles, won, moves, onWin, size, activeTheme.id, ageGroup])
 
