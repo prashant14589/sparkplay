@@ -21,6 +21,7 @@ interface Props {
   streak?: number
   themeEmoji?: string   // used as the fallback celebration character
   themeId?: string      // used to load the commissioned celebration illustration
+  isAuthenticated?: boolean
   onNext?: () => void
   onReplay: () => void
 }
@@ -55,6 +56,7 @@ export default function LevelComplete({
   streak = 0,
   themeEmoji = '🎊',
   themeId,
+  isAuthenticated = false,
   onNext,
   onReplay,
 }: Props) {
@@ -219,6 +221,30 @@ export default function LevelComplete({
           >
             {isAllDone ? 'Replay from Level 1' : 'Replay this level'}
           </button>
+          {/* Save-progress nudge — guests only, shown at the emotional high point */}
+          {!isAuthenticated && (
+            <div
+              data-testid="save-progress-nudge"
+              className="rounded-2xl bg-amber-50 border border-amber-100 px-4 py-3 flex items-center gap-3"
+            >
+              <span className="text-xl flex-shrink-0">🔥</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-black text-amber-800 leading-snug">
+                  Save your streak &amp; progress
+                </p>
+                <p className="text-[10px] text-amber-600 font-semibold">
+                  Sign up free — takes 30 seconds
+                </p>
+              </div>
+              <a
+                href="/signup"
+                className="flex-shrink-0 rounded-xl bg-amber-500 text-white text-xs font-black px-3 py-2 hover:bg-amber-600 transition-colors"
+              >
+                Save →
+              </a>
+            </div>
+          )}
+
           <button
             onClick={handleBackToHome}
             className="block w-full text-center text-gray-300 font-semibold text-xs hover:text-violet-500 py-1 transition-colors"

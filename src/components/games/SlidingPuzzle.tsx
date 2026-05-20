@@ -7,6 +7,7 @@ import { recordGameForQuest } from '@/lib/quests'
 import { Sounds } from '@/lib/sounds'
 import HowToPlay from './HowToPlay'
 import LevelComplete from '@/components/LevelComplete'
+import ThemeEnvironment from '@/components/ThemeEnvironment'
 
 const PUZZLE_SIZE: Record<string, number> = {
   '2-4': 3, '4-6': 3, '6-8': 4, '8-12': 5,
@@ -121,6 +122,7 @@ export default function SlidingPuzzle({ theme, ageGroup = '4-6', childName, onWi
   }
 
   return (
+    <ThemeEnvironment themeId={activeTheme.id} className="p-3">
     <div className="select-none flex flex-col items-center gap-4">
       <HowToPlay gameType="puzzle" />
 
@@ -217,5 +219,6 @@ export default function SlidingPuzzle({ theme, ageGroup = '4-6', childName, onWi
         <button onClick={reset} className="text-xs text-gray-400 hover:text-gray-600 underline">New puzzle</button>
       )}
     </div>
+    </ThemeEnvironment>
   )
 }

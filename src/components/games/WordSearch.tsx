@@ -18,6 +18,7 @@ import {
 } from '@/lib/wordSearch'
 import { recordCompletion, type Badge } from '@/lib/progress'
 import LevelComplete from '@/components/LevelComplete'
+import ThemeEnvironment from '@/components/ThemeEnvironment'
 import HowToPlay from './HowToPlay'
 
 // Number of words to find per level (increases with difficulty)
@@ -193,6 +194,7 @@ export default function WordSearch({
   const tier = getAgeTier(ageGroup)
 
   return (
+    <ThemeEnvironment themeId={activeTheme.id} className="p-3">
     <div className="select-none flex flex-col gap-4">
       <HowToPlay gameType="word_search" />
 
@@ -281,5 +283,6 @@ export default function WordSearch({
         Drag or tap letters to select a word
       </p>
     </div>
+    </ThemeEnvironment>
   )
 }

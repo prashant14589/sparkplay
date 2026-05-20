@@ -371,6 +371,7 @@ export default function MemoryMatch({
           newBadges={completionResult.newBadges}
           streak={completionResult.streak}
           themeEmoji={activeTheme.cards[0]} themeId={activeTheme.id}
+          isAuthenticated={isAuthenticated}
           onReplay={replay}
           onNext={currentLevel < TOTAL_LEVELS ? nextLevel : undefined}
         />

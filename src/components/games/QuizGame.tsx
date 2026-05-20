@@ -11,6 +11,7 @@ import {
 } from '@/lib/quiz'
 import { recordCompletion, type Badge } from '@/lib/progress'
 import LevelComplete from '@/components/LevelComplete'
+import ThemeEnvironment from '@/components/ThemeEnvironment'
 import GameEmoji from '@/components/GameEmoji'
 
 // Vivid per-option colour pairs [bg, text, border] — cycling through 4 colours
@@ -133,6 +134,7 @@ export default function QuizGame({
   const tier = getAgeTier(ageGroup)
 
   return (
+    <ThemeEnvironment themeId={activeTheme.id} className="p-3">
     <div className="select-none flex flex-col gap-5">
 
       {/* Age tier badge */}
@@ -217,5 +219,6 @@ export default function QuizGame({
         </p>
       )}
     </div>
+    </ThemeEnvironment>
   )
 }

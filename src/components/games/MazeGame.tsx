@@ -6,6 +6,7 @@ import { recordCompletion, type Badge } from '@/lib/progress'
 import { Sounds } from '@/lib/sounds'
 import HowToPlay from './HowToPlay'
 import LevelComplete from '@/components/LevelComplete'
+import ThemeEnvironment from '@/components/ThemeEnvironment'
 import GameEmoji from '@/components/GameEmoji'
 
 type Cell = { n: boolean; e: boolean; s: boolean; w: boolean }
@@ -140,6 +141,7 @@ export default function MazeGame({ theme, ageGroup = '4-6', childName, onWin }: 
   const tier = getAgeTier(ageGroup)
 
   return (
+    <ThemeEnvironment themeId={activeTheme.id} className="p-3">
     <div className="select-none flex flex-col items-center gap-4" ref={containerRef}>
       <div className="w-full"><HowToPlay gameType="maze" /></div>
 
@@ -230,5 +232,6 @@ export default function MazeGame({ theme, ageGroup = '4-6', childName, onWin }: 
         Arrow keys or buttons to move <GameEmoji emoji={playerEmoji} size={18} /> to <GameEmoji emoji={goalEmoji} size={18} />
       </p>
     </div>
+    </ThemeEnvironment>
   )
 }

@@ -7,8 +7,10 @@ import SignupModal from '@/components/SignupModal'
 import { THEMES, AGE_GROUPS, getThemesForAge, type Theme, type AgeGroupId } from '@/lib/themes'
 import { createClient } from '@/lib/supabase/client'
 import { getProgress, setChildName as saveChildName, type Progress } from '@/lib/progress'
-import { recordGameForQuest } from '@/lib/quests'
+import { recordGameForQuest, getDailyQuest, getQuestProgress, type Quest } from '@/lib/quests'
 import { getActiveBuddy, calcXP, calcLevel, randomPhrase } from '@/lib/buddy'
+import QuestTeaser from '@/components/QuestTeaser'
+import GuestDrawer from '@/components/GuestDrawer'
 
 const DEFAULT_AGE: AgeGroupId = '4-6'
 const ILLUSTRATED = new Set(['animals', 'dinos', 'unicorns', 'ocean', 'space', 'superheroes', 'food', 'farm'])
@@ -51,7 +53,11 @@ export default function HomePage() {
   const [buddyEmoji, setBuddyEmoji]     = useState('🦕')
   const [buddyPhrase, setBuddyPhrase]   = useState('Ready to play!')
   const [showNameInput, setShowNameInput] = useState(false)
+  const [dailyQuest, setDailyQuest]     = useState<Quest | null>(null)
+  const [questProgress, setQuestProgress] = useState(0)
+  const [drawerVariant, setDrawerVariant] = useState<'rewards' | 'profile' | null>(null)
   const nameRef = useRef<HTMLInputElement>(null)
+  const questRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const p = getProgress()
@@ -62,6 +68,10 @@ export default function HomePage() {
     const buddy = getActiveBuddy(calcLevel(xp))
     setBuddyEmoji(buddy.emoji)
     setBuddyPhrase(randomPhrase(buddy, 'idle'))
+
+    // Daily quest
+    setDailyQuest(getDailyQuest())
+    setQuestProgress(getQuestProgress())
 
     // Pre-select theme from adventure picker link e.g. /?theme=dinos
     const themeParam = new URLSearchParams(window.location.search).get('theme')
@@ -105,6 +115,7 @@ export default function HomePage() {
     setMoves(moves)
     setProgress(getProgress())
     recordGameForQuest('memory')
+    setQuestProgress(getQuestProgress())
     if (level === 1 && !isAuth) setShowModal(true)
   }, [isAuth])
 
@@ -275,6 +286,13 @@ export default function HomePage() {
           })}
         </div>
 
+        {/* ── Daily quest teaser — visible without auth, drives the daily loop ── */}
+        {dailyQuest && (
+          <div ref={questRef} id="quest" className="mb-5">
+            <QuestTeaser quest={dailyQuest} progress={questProgress} />
+          </div>
+        )}
+
         {/* ── Game card ── */}
         <div className="rounded-3xl overflow-hidden shadow-xl border border-white/50 mb-6">
           {/* Themed header with hero image */}
@@ -358,23 +376,78 @@ export default function HomePage() {
       {/* ── Bottom tab navigation ── */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-md border-t border-gray-100 shadow-xl">
         <div className="max-w-md mx-auto grid grid-cols-4 h-16">
-          {[
-            { icon: '🎮', label: 'Play',     href: '/'                              },
-            { icon: '⚡', label: 'Quests',   href: isAuth ? '/dashboard' : '/signup' },
-            { icon: '🏅', label: 'Rewards',  href: isAuth ? '/dashboard' : '/signup' },
-            { icon: '👤', label: 'Profile',  href: isAuth ? '/dashboard' : '/signup' },
-          ].map(tab => (
-            <Link
-              key={tab.label}
-              href={tab.href}
+          {/* Play — always goes home */}
+          <Link
+            href="/"
+            className="flex flex-col items-center justify-center gap-0.5 text-violet-600 transition-colors"
+          >
+            <span className="text-xl leading-none">🎮</span>
+            <span className="text-xs font-black leading-none">Play</span>
+          </Link>
+
+          {/* Quests — scrolls to quest teaser (no auth needed) */}
+          {isAuth ? (
+            <Link href="/dashboard"
+              className="flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-violet-600 transition-colors">
+              <span className="text-xl leading-none">⚡</span>
+              <span className="text-xs font-black leading-none">Quests</span>
+            </Link>
+          ) : (
+            <button
+              onClick={() => {
+                questRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+              }}
               className="flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-violet-600 transition-colors"
             >
-              <span className="text-xl leading-none">{tab.icon}</span>
-              <span className="text-xs font-black leading-none">{tab.label}</span>
+              <span className="text-xl leading-none">⚡</span>
+              <span className="text-xs font-black leading-none">Quests</span>
+            </button>
+          )}
+
+          {/* Rewards — drawer for guests */}
+          {isAuth ? (
+            <Link href="/dashboard"
+              className="flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-violet-600 transition-colors">
+              <span className="text-xl leading-none">🏅</span>
+              <span className="text-xs font-black leading-none">Rewards</span>
             </Link>
-          ))}
+          ) : (
+            <button
+              onClick={() => setDrawerVariant('rewards')}
+              className="flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-violet-600 transition-colors"
+            >
+              <span className="text-xl leading-none">🏅</span>
+              <span className="text-xs font-black leading-none">Rewards</span>
+            </button>
+          )}
+
+          {/* Profile — drawer for guests */}
+          {isAuth ? (
+            <Link href="/dashboard"
+              className="flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-violet-600 transition-colors">
+              <span className="text-xl leading-none">👤</span>
+              <span className="text-xs font-black leading-none">Profile</span>
+            </Link>
+          ) : (
+            <button
+              onClick={() => setDrawerVariant('profile')}
+              className="flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-violet-600 transition-colors"
+            >
+              <span className="text-xl leading-none">👤</span>
+              <span className="text-xs font-black leading-none">Profile</span>
+            </button>
+          )}
         </div>
       </nav>
+
+      {/* Guest drawers */}
+      {!isAuth && drawerVariant && (
+        <GuestDrawer
+          open
+          variant={drawerVariant}
+          onClose={() => setDrawerVariant(null)}
+        />
+      )}
 
       {showModal && <SignupModal moves={completedMoves} onClose={() => { setShowModal(false); setGameKey(k => k + 1) }} />}
     </div>
