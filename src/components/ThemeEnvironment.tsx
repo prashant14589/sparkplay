@@ -10,6 +10,7 @@ interface EnvParticle {
   floatClass: 'animate-float' | 'animate-float-alt' | 'animate-float-slow'
 }
 
+// Childhood memory themes — warmer, quieter particles
 const ENV_PARTICLES: Record<string, EnvParticle[]> = {
   animals: [
     { char: '🐾', x: 8,  y: 12, delay: 0,   floatClass: 'animate-float' },
@@ -74,6 +75,72 @@ const ENV_PARTICLES: Record<string, EnvParticle[]> = {
     { char: '🍬', x: 88, y: 65, delay: 0.5, floatClass: 'animate-float' },
     { char: '✨', x: 47, y: 4,  delay: 1.9, floatClass: 'animate-float-alt' },
     { char: '🌟', x: 77, y: 40, delay: 1.2, floatClass: 'animate-float-slow' },
+  ],
+
+  // ── Childhood memory themes ─────────────────────────────────────────────
+  monsoon: [
+    { char: '🌧', x: 8,  y: 10, delay: 0,   floatClass: 'animate-float' },
+    { char: '💧', x: 85, y: 8,  delay: 0.8, floatClass: 'animate-float-alt' },
+    { char: '🐸', x: 6,  y: 70, delay: 1.4, floatClass: 'animate-float-slow' },
+    { char: '🌈', x: 87, y: 65, delay: 0.4, floatClass: 'animate-float' },
+    { char: '🌿', x: 46, y: 4,  delay: 1.9, floatClass: 'animate-float-alt' },
+    { char: '☔', x: 78, y: 38, delay: 1.1, floatClass: 'animate-float-slow' },
+  ],
+  gully_cricket: [
+    { char: '🏏', x: 7,  y: 11, delay: 0,   floatClass: 'animate-float' },
+    { char: '🌅', x: 84, y: 8,  delay: 0.9, floatClass: 'animate-float-alt' },
+    { char: '🌳', x: 5,  y: 72, delay: 1.5, floatClass: 'animate-float-slow' },
+    { char: '⭐', x: 87, y: 63, delay: 0.3, floatClass: 'animate-float' },
+    { char: '🌾', x: 48, y: 3,  delay: 2.0, floatClass: 'animate-float-alt' },
+    { char: '🏆', x: 79, y: 40, delay: 1.2, floatClass: 'animate-float-slow' },
+  ],
+  old_tree: [
+    { char: '🌳', x: 8,  y: 10, delay: 0,   floatClass: 'animate-float' },
+    { char: '🐦', x: 83, y: 7,  delay: 0.7, floatClass: 'animate-float-alt' },
+    { char: '🍃', x: 5,  y: 68, delay: 1.3, floatClass: 'animate-float-slow' },
+    { char: '🌸', x: 88, y: 62, delay: 0.5, floatClass: 'animate-float' },
+    { char: '🦋', x: 46, y: 4,  delay: 2.0, floatClass: 'animate-float-alt' },
+    { char: '🍎', x: 77, y: 42, delay: 1.1, floatClass: 'animate-float-slow' },
+  ],
+  fishing_dawn: [
+    { char: '🎣', x: 7,  y: 12, delay: 0,   floatClass: 'animate-float' },
+    { char: '🌅', x: 83, y: 7,  delay: 0.6, floatClass: 'animate-float-alt' },
+    { char: '🐟', x: 5,  y: 74, delay: 1.6, floatClass: 'animate-float-slow' },
+    { char: '🌙', x: 88, y: 68, delay: 0.2, floatClass: 'animate-float' },
+    { char: '💧', x: 50, y: 4,  delay: 1.8, floatClass: 'animate-float-alt' },
+    { char: '🌿', x: 76, y: 40, delay: 1.0, floatClass: 'animate-float-slow' },
+  ],
+  kite_sky: [
+    { char: '🪁', x: 8,  y: 10, delay: 0,   floatClass: 'animate-float' },
+    { char: '☁', x: 85, y: 7,  delay: 0.8, floatClass: 'animate-float-alt' },
+    { char: '🌈', x: 5,  y: 70, delay: 1.4, floatClass: 'animate-float-slow' },
+    { char: '⭐', x: 89, y: 66, delay: 0.4, floatClass: 'animate-float' },
+    { char: '🌬', x: 47, y: 3,  delay: 1.9, floatClass: 'animate-float-alt' },
+    { char: '🦅', x: 80, y: 38, delay: 1.2, floatClass: 'animate-float-slow' },
+  ],
+  market_day: [
+    { char: '🥭', x: 7,  y: 11, delay: 0,   floatClass: 'animate-float' },
+    { char: '🌶', x: 84, y: 8,  delay: 0.7, floatClass: 'animate-float-alt' },
+    { char: '🥕', x: 6,  y: 73, delay: 1.5, floatClass: 'animate-float-slow' },
+    { char: '🌸', x: 87, y: 64, delay: 0.3, floatClass: 'animate-float' },
+    { char: '🌿', x: 49, y: 4,  delay: 2.0, floatClass: 'animate-float-alt' },
+    { char: '🍅', x: 78, y: 40, delay: 1.0, floatClass: 'animate-float-slow' },
+  ],
+  first_bicycle: [
+    { char: '🚲', x: 8,  y: 11, delay: 0,   floatClass: 'animate-float' },
+    { char: '⭐', x: 85, y: 7,  delay: 0.8, floatClass: 'animate-float-alt' },
+    { char: '🌸', x: 5,  y: 72, delay: 1.4, floatClass: 'animate-float-slow' },
+    { char: '🌈', x: 88, y: 65, delay: 0.5, floatClass: 'animate-float' },
+    { char: '💫', x: 46, y: 4,  delay: 1.9, floatClass: 'animate-float-alt' },
+    { char: '🌿', x: 77, y: 38, delay: 1.1, floatClass: 'animate-float-slow' },
+  ],
+  night_sky: [
+    { char: '⭐', x: 8,  y: 10, delay: 0,   floatClass: 'animate-float' },
+    { char: '🌙', x: 85, y: 7,  delay: 0.8, floatClass: 'animate-float-alt' },
+    { char: '💫', x: 4,  y: 70, delay: 1.4, floatClass: 'animate-float-slow' },
+    { char: '🌟', x: 89, y: 66, delay: 0.4, floatClass: 'animate-float' },
+    { char: '☄', x: 47, y: 3,  delay: 1.9, floatClass: 'animate-float-alt' },
+    { char: '🦉', x: 79, y: 38, delay: 1.2, floatClass: 'animate-float-slow' },
   ],
 }
 

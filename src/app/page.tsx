@@ -11,6 +11,8 @@ import { recordGameForQuest, getDailyQuest, getQuestProgress, type Quest } from 
 import { getActiveBuddy, calcXP, calcLevel, randomPhrase } from '@/lib/buddy'
 import QuestTeaser from '@/components/QuestTeaser'
 import GuestDrawer from '@/components/GuestDrawer'
+import MemoryMoment from '@/components/MemoryMoment'
+import { MEMORY_THEME_IDS } from '@/lib/memoryThemes'
 
 const DEFAULT_AGE: AgeGroupId = '4-6'
 const ILLUSTRATED = new Set(['animals', 'dinos', 'unicorns', 'ocean', 'space', 'superheroes', 'food', 'farm'])
@@ -56,6 +58,8 @@ export default function HomePage() {
   const [dailyQuest, setDailyQuest]     = useState<Quest | null>(null)
   const [questProgress, setQuestProgress] = useState(0)
   const [drawerVariant, setDrawerVariant] = useState<'rewards' | 'profile' | null>(null)
+  const [memoryMomentActive, setMemoryMomentActive] = useState(false)
+  const [seenMemoryMoments] = useState(() => new Set<string>())
   const nameRef = useRef<HTMLInputElement>(null)
   const questRef = useRef<HTMLDivElement>(null)
 
@@ -109,6 +113,11 @@ export default function HomePage() {
     setActiveTheme(t)
     setGameKey(k => k + 1)
     setShowModal(false)
+    // Show memory moment on first visit to a memory theme
+    if (MEMORY_THEME_IDS.has(t.id) && !seenMemoryMoments.has(t.id)) {
+      seenMemoryMoments.add(t.id)
+      setMemoryMomentActive(true)
+    }
   }
 
   const handleLevelComplete = useCallback((level: number, moves: number) => {
@@ -247,8 +256,8 @@ export default function HomePage() {
         </div>
 
         {/* ── Theme strip — illustrated adventure cards ── */}
-        <div className="flex gap-2.5 overflow-x-auto pb-1 mb-5 scrollbar-hide snap-x snap-mandatory">
-          {availableThemes.map(t => {
+        <div className="flex gap-2.5 overflow-x-auto pb-1 mb-3 scrollbar-hide snap-x snap-mandatory">
+          {availableThemes.filter(t => !MEMORY_THEME_IDS.has(t.id)).map(t => {
             const isActive = activeTheme.id === t.id
             return (
               <button
@@ -285,6 +294,56 @@ export default function HomePage() {
             )
           })}
         </div>
+
+        {/* ── Childhood Memory themes — the worlds our parents played in ── */}
+        {availableThemes.some(t => MEMORY_THEME_IDS.has(t.id)) && (
+          <div className="mb-5">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="flex-1 h-px bg-amber-100" />
+              <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest whitespace-nowrap">
+                🧡 Childhood Memories
+              </span>
+              <div className="flex-1 h-px bg-amber-100" />
+            </div>
+            <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-hide snap-x snap-mandatory">
+              {availableThemes.filter(t => MEMORY_THEME_IDS.has(t.id)).map(t => {
+                const isActive = activeTheme.id === t.id
+                return (
+                  <button
+                    key={t.id}
+                    onClick={() => switchTheme(t)}
+                    className={[
+                      'relative flex-shrink-0 rounded-2xl overflow-hidden snap-start transition-all',
+                      'w-[88px] h-[72px]',
+                      isActive
+                        ? 'ring-2 ring-amber-400 ring-offset-2 scale-105 shadow-xl'
+                        : 'opacity-90 hover:opacity-100 hover:scale-102 shadow-md',
+                    ].join(' ')}
+                    style={{ outline: isActive ? '3px solid #f59e0b' : 'none', outlineOffset: 3 }}
+                  >
+                    {/* Warm sepia gradient — deliberately analog */}
+                    <div className={`absolute inset-0 bg-gradient-to-br ${t.color}`} style={{ filter: 'saturate(0.75) brightness(0.95)' }}>
+                      <span className="absolute bottom-1 right-1 text-3xl leading-none drop-shadow">{t.emoji}</span>
+                    </div>
+                    {/* Warm overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-amber-900/40 to-transparent" />
+                    <span className="absolute bottom-1.5 left-2 text-[10px] font-black text-white drop-shadow leading-tight">
+                      {t.name}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Memory Moment — appears when a memory theme is first selected */}
+        {memoryMomentActive && (
+          <MemoryMoment
+            themeId={activeTheme.id}
+            onDismiss={() => setMemoryMomentActive(false)}
+          />
+        )}
 
         {/* ── Daily quest teaser — visible without auth, drives the daily loop ── */}
         {dailyQuest && (

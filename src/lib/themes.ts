@@ -125,6 +125,82 @@ export const THEMES: Theme[] = [
     ageGroups: ['2-4', '4-6', '6-8'],
     cards: ['🍕','🍦','🍩','🍎','🍓','🌮','🍪','🧁','🍰','🎂','🍫','🍬','🍭','🍑','🥧','🧃','🍇','🍒'],
   },
+
+  // ── Childhood Memory Themes ──────────────────────────────────────────────
+  // Warm, earthy, analog. The worlds our parents played in.
+
+  {
+    id: 'monsoon',
+    name: 'First Rain',
+    emoji: '🌧️',
+    color: 'from-teal-400 to-cyan-500',
+    bg: 'bg-teal-50',
+    ageGroups: ['4-6', '6-8', '8-12'],
+    cards: ['🌧️','☔','🐸','🌈','💧','🌊','⛈️','🌿','🌱','🍃','🌾','🪲','🐌','🌸','🦋','🌬️','🫧','🌦️'],
+  },
+  {
+    id: 'gully_cricket',
+    name: 'Street Games',
+    emoji: '🏏',
+    color: 'from-amber-400 to-orange-500',
+    bg: 'bg-amber-50',
+    ageGroups: ['4-6', '6-8', '8-12'],
+    cards: ['🏏','🌅','🌳','🏃','👟','🌿','🎯','🌙','⭐','🏆','🔥','💪','🎉','🌺','🍃','🌾','🌻','🌈'],
+  },
+  {
+    id: 'old_tree',
+    name: 'The Old Tree',
+    emoji: '🌳',
+    color: 'from-green-600 to-emerald-700',
+    bg: 'bg-green-50',
+    ageGroups: ['4-6', '6-8', '8-12'],
+    cards: ['🌳','🐦','🍃','🌿','🌸','🍎','🍂','🌺','🦋','🐛','🪺','🌰','🍇','🐝','🦜','🌻','🌼','🍃'],
+  },
+  {
+    id: 'fishing_dawn',
+    name: 'Fishing at Dawn',
+    emoji: '🎣',
+    color: 'from-violet-400 to-indigo-400',
+    bg: 'bg-violet-50',
+    ageGroups: ['4-6', '6-8', '8-12'],
+    cards: ['🎣','🐟','🌅','🐸','🦋','🌿','🪸','🐚','🌾','🦆','🐢','🌸','💧','⭐','🌙','🍃','🌱','🌊'],
+  },
+  {
+    id: 'kite_sky',
+    name: 'Kite Festival',
+    emoji: '🪁',
+    color: 'from-sky-400 to-blue-500',
+    bg: 'bg-sky-50',
+    ageGroups: ['4-6', '6-8', '8-12'],
+    cards: ['🪁','🌈','⭐','💫','🌟','🌬️','🌅','🎨','🌺','🌸','🌻','🍃','🦅','🦋','☁️','🌤️','🎊','🌈'],
+  },
+  {
+    id: 'market_day',
+    name: 'Market Day',
+    emoji: '🛒',
+    color: 'from-yellow-400 to-amber-500',
+    bg: 'bg-yellow-50',
+    ageGroups: ['4-6', '6-8', '8-12'],
+    cards: ['🥕','🍅','🍆','🌽','🥦','🍋','🍎','🌶️','🧅','🥜','🍇','🍓','🌿','🫑','🥭','🍊','🥥','🍌'],
+  },
+  {
+    id: 'first_bicycle',
+    name: 'First Bicycle',
+    emoji: '🚲',
+    color: 'from-rose-400 to-pink-500',
+    bg: 'bg-rose-50',
+    ageGroups: ['4-6', '6-8', '8-12'],
+    cards: ['🚲','⭐','💫','🌟','🎯','🏆','🎊','🎉','🌈','🌺','🌸','🌻','🍃','🌿','🌱','🌾','🦋','🐦'],
+  },
+  {
+    id: 'night_sky',
+    name: 'Stargazing',
+    emoji: '⭐',
+    color: 'from-indigo-600 to-slate-700',
+    bg: 'bg-indigo-50',
+    ageGroups: ['4-6', '6-8', '8-12'],
+    cards: ['⭐','🌙','💫','🌟','☄️','🌠','🪐','🌛','🌜','🌕','🔭','🦉','🦋','🌿','🌸','🌺','🌌','🎑'],
+  },
 ]
 
 export const TEMPLATES = [

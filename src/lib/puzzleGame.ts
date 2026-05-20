@@ -50,6 +50,16 @@ const STYLE = [
   'no text or watermarks',
 ].join(', ')
 
+// Warm watercolour style for childhood memory themes — analog, nostalgic, not digital
+const MEMORY_STYLE = [
+  'warm watercolour illustration',
+  'soft vintage palette',
+  'wide landscape composition',
+  'nostalgic golden-hour light',
+  'gentle impressionistic brushstrokes',
+  'no text or watermarks',
+].join(', ')
+
 // ─── Age-specific scenario banks ───────────────────────────────────────────
 // Vocabulary, themes, and aspirations matched to developmental stage.
 
@@ -115,6 +125,48 @@ export const PUZZLE_SCENARIOS_BY_AGE: Record<string, PuzzleScenario[]> = {
       prompt: (n) => `${STYLE}: ${n} at the helm of a grand pirate ship sailing past dramatic sea cliffs` },
   ],
 
+  // ── Memory themes: universal childhood (4-6) ────────────────────────────
+  // Simple, sensory, joyful — first rain, the tree, the market
+  '4-6-memory': [
+    { id: 'rain-puddles',    label: 'jumping in rain puddles',     emoji: '💧', theme: 'monsoon',
+      prompt: (n) => `${MEMORY_STYLE}: a joyful child named ${n} jumping in a giant puddle on a rain-soaked village road, paper boats floating nearby, warm evening light through clouds` },
+    { id: 'old-tree-climb',  label: 'climbing the old mango tree', emoji: '🌳', theme: 'old_tree',
+      prompt: (n) => `${MEMORY_STYLE}: ${n} perched happily in the branches of a wide old mango tree, sunlight filtering through green leaves, a summer afternoon` },
+    { id: 'market-cart',     label: 'sitting on Papa\'s shoulders at the market', emoji: '🛒', theme: 'market_day',
+      prompt: (n) => `${MEMORY_STYLE}: ${n} sitting on a parent\'s shoulders at a colourful village market, surrounded by bright vegetables, flowers, and smiling vendors` },
+    { id: 'kite-first',      label: 'flying a kite for the first time', emoji: '🪁', theme: 'kite_sky',
+      prompt: (n) => `${MEMORY_STYLE}: ${n} running on an open field holding a bright kite string, the kite soaring high in a golden sky, pure joy on their face` },
+    { id: 'morning-pond',    label: 'watching frogs at the pond',  emoji: '🐸', theme: 'fishing_dawn',
+      prompt: (n) => `${MEMORY_STYLE}: ${n} sitting at the edge of a still morning pond, watching frogs jump, mist on the water, soft pink dawn light` },
+    { id: 'bicycle-try',     label: 'trying to ride a bicycle',    emoji: '🚲', theme: 'first_bicycle',
+      prompt: (n) => `${MEMORY_STYLE}: ${n} on a small bicycle with a loving adult holding the back, tree-lined path, warm afternoon light, both laughing` },
+    { id: 'stars-rooftop',   label: 'counting stars from the rooftop', emoji: '⭐', theme: 'night_sky',
+      prompt: (n) => `${MEMORY_STYLE}: ${n} lying on a rooftop on a warm night, counting stars with a grandparent beside them, Milky Way visible above, lanterns in the distance` },
+    { id: 'cricket-gully',   label: 'playing street cricket',      emoji: '🏏', theme: 'gully_cricket',
+      prompt: (n) => `${MEMORY_STYLE}: ${n} swinging a bat in a narrow lane, friends scattered as fielders, chalk stumps on a wall, golden late-afternoon light` },
+  ],
+
+  // ── Memory themes: universal childhood (6-8) ────────────────────────────
+  // Richer emotion, more narrative — the story behind the memory
+  '6-8-memory': [
+    { id: 'monsoon-walk',    label: 'walking home in the monsoon', emoji: '🌧️', theme: 'monsoon',
+      prompt: (n) => `${MEMORY_STYLE}: ${n} and a parent walking home together in warm heavy rain, both soaked and laughing, a flooded lane with paper boats, dramatic monsoon sky` },
+    { id: 'tree-hideout',    label: 'the secret hideout in the tree', emoji: '🌳', theme: 'old_tree',
+      prompt: (n) => `${MEMORY_STYLE}: ${n} in a handmade wooden platform in an old tree, books and snacks spread around, a warm summer afternoon, viewed from below looking up through leaves` },
+    { id: 'market-mango',    label: 'eating raw mango at the market', emoji: '🥭', theme: 'market_day',
+      prompt: (n) => `${MEMORY_STYLE}: ${n} biting into a raw mango with salt and chilli at a busy market, a street vendor smiling, surrounded by carts and colour` },
+    { id: 'fishing-dawn',    label: 'first fishing trip at dawn',  emoji: '🎣', theme: 'fishing_dawn',
+      prompt: (n) => `${MEMORY_STYLE}: ${n} holding a bamboo fishing rod at dawn beside a still river, sitting next to a grandfather, mist rising from the water, absolute silence and belonging` },
+    { id: 'kite-battle',     label: 'winning the kite battle',     emoji: '🪁', theme: 'kite_sky',
+      prompt: (n) => `${MEMORY_STYLE}: ${n} cheering as their kite cuts a rival\'s string, neighbourhood rooftops filled with children flying kites at sunset, festival energy` },
+    { id: 'bicycle-alone',   label: 'riding alone for the first time', emoji: '🚲', theme: 'first_bicycle',
+      prompt: (n) => `${MEMORY_STYLE}: ${n} riding a bicycle freely down an empty tree-lined road, arms briefly out in joy, the moment of realising they are doing it alone, golden light` },
+    { id: 'milkyway',        label: 'seeing the Milky Way',        emoji: '🌌', theme: 'night_sky',
+      prompt: (n) => `${MEMORY_STYLE}: ${n} lying on a blanket in an open field with family, the full Milky Way painted above them, fireflies in the grass, a lantern nearby` },
+    { id: 'last-over',       label: 'the last over before dark',   emoji: '🏏', theme: 'gully_cricket',
+      prompt: (n) => `${MEMORY_STYLE}: ${n} batting in the last over of a street game, the lane lit orange by sunset, friends cheering from rooftops and doorways, the ball coming in` },
+  ],
+
   // 8–12 Tweens: aspirational, mature tone, complexity & consequence
   '8-12': [
     { id: 'rocket-launch', label: 'launching a rocket into orbit',emoji: '🛸', theme: 'space',
@@ -145,7 +197,12 @@ export const DEFAULT_DIFFICULTY_FOR_AGE: Record<string, DifficultyLevel> = {
 }
 
 export function getScenariosForAge(ageGroup: string): PuzzleScenario[] {
-  return PUZZLE_SCENARIOS_BY_AGE[ageGroup] ?? PUZZLE_SCENARIOS_BY_AGE['4-6']
+  const base = PUZZLE_SCENARIOS_BY_AGE[ageGroup] ?? PUZZLE_SCENARIOS_BY_AGE['4-6']
+  // Merge in memory scenarios for ages 4+ (2-4 toddlers skip memory themes)
+  if (ageGroup === '2-4') return base
+  const memoryAge = ageGroup === '4-6' ? '4-6-memory' : '6-8-memory'
+  const memory = PUZZLE_SCENARIOS_BY_AGE[memoryAge] ?? []
+  return [...base, ...memory]
 }
 
 // Kept for backward compatibility
