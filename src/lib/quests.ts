@@ -55,6 +55,38 @@ export function isQuestComplete(): boolean {
   return getQuestProgress() >= getDailyQuest().target
 }
 
+// Games playable directly from the home page (no auth / dashboard needed)
+const HOME_GAMES = new Set(['memory', 'any'])
+
+export interface QuestCTA {
+  action: 'scroll' | 'navigate'
+  label: string
+  href?: string   // only set when action === 'navigate'
+}
+
+const GAME_LABELS: Record<string, string> = {
+  memory:       'Play Memory Match →',
+  quiz:         'Play Quiz →',
+  word_search:  'Play Word Search →',
+  maze:         'Play Maze →',
+  story:        'Play Story Quest →',
+  puzzle:       'Play Sliding Puzzle →',
+  number_merge: 'Play Number Merge →',
+  puzzle_maker: 'Play Puzzle Maker →',
+  any:          'Play a game →',
+}
+
+export function getQuestCTA(gameType: string): QuestCTA {
+  if (HOME_GAMES.has(gameType)) {
+    return { action: 'scroll', label: GAME_LABELS[gameType] ?? 'Play a game →' }
+  }
+  return {
+    action: 'navigate',
+    href: '/dashboard',
+    label: GAME_LABELS[gameType] ?? 'Play in Dashboard →',
+  }
+}
+
 // Call this from any game's onLevelComplete to auto-advance the daily quest.
 // Pass the game type ('memory', 'quiz', 'word_search', 'puzzle', 'maze', 'story').
 export function recordGameForQuest(gameType: string) {

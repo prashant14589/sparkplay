@@ -10,6 +10,7 @@ import {
 } from '@/lib/themes'
 import { makeGameTitle } from '@/lib/titleTemplate'
 import { getBuilderStepConfig, stepNumber, prevStep, type StepId } from './stepConfig'
+import { getChildProfile } from '@/lib/childProfile'
 
 const ILLUSTRATED = new Set(['animals', 'dinos', 'unicorns', 'ocean', 'space', 'superheroes', 'food', 'farm'])
 const STEPS = getBuilderStepConfig()
@@ -17,11 +18,13 @@ const STEPS = getBuilderStepConfig()
 export default function BuilderPage() {
   const router = useRouter()
 
-  const [step, setStep]                     = useState<StepId>('age')
-  const [ageGroup, setAgeGroup]             = useState<AgeGroupId | null>(null)
+  // If a child profile exists, skip the age step — we already know who's playing
+  const savedProfile = typeof window !== 'undefined' ? getChildProfile() : null
+  const [step, setStep]                     = useState<StepId>(savedProfile ? 'game' : 'age')
+  const [ageGroup, setAgeGroup]             = useState<AgeGroupId | null>(savedProfile?.ageGroup ?? null)
   const [selectedTemplate, setTemplate]     = useState<typeof TEMPLATES[0] | null>(null)
   const [selectedTheme, setTheme]           = useState<Theme | null>(null)
-  const [childName, setChildName]           = useState('')
+  const [childName, setChildName]           = useState(savedProfile?.name ?? '')
   const [title, setTitle]                   = useState('')
   const [saving, setSaving]                 = useState(false)
   const [error, setError]                   = useState<string | null>(null)

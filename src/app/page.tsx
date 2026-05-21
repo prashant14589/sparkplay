@@ -13,9 +13,12 @@ import QuestTeaser from '@/components/QuestTeaser'
 import GuestDrawer from '@/components/GuestDrawer'
 import MemoryMoment from '@/components/MemoryMoment'
 import ParentHero from '@/components/ParentHero'
+import ProfileSetup from '@/components/ProfileSetup'
+import ProfilePicker from '@/components/ProfilePicker'
 import { MEMORY_THEME_IDS } from '@/lib/memoryThemes'
 import { getThemeBoardStyle } from '@/lib/themeBoard'
 import MemoryThemeCard from '@/components/MemoryThemeCard'
+import { getChildProfile, saveChildProfile, type ChildProfile } from '@/lib/childProfile'
 
 const DEFAULT_AGE: AgeGroupId = '4-6'
 const ILLUSTRATED = new Set(['animals', 'dinos', 'unicorns', 'ocean', 'space', 'superheroes', 'food', 'farm'])
@@ -45,45 +48,57 @@ const PARTICLE_POSITIONS = [
 ]
 
 export default function HomePage() {
-  const [ageGroup, setAgeGroup]         = useState<AgeGroupId>(DEFAULT_AGE)
+  // Profile-driven state — age and name come from the stored child profile
+  const [childProfile, setChildProfile] = useState<ChildProfile | null>(null)
+  const [showProfileSetup, setShowProfileSetup] = useState(false)
+
+  const ageGroup = childProfile?.ageGroup ?? DEFAULT_AGE
   const [availableThemes, setAvailable] = useState<Theme[]>(getThemesForAge(DEFAULT_AGE))
   const [activeTheme, setActiveTheme]   = useState<Theme>(getThemesForAge(DEFAULT_AGE)[0])
   const [showModal, setShowModal]       = useState(false)
   const [completedMoves, setMoves]      = useState(0)
   const [gameKey, setGameKey]           = useState(0)
   const [isAuth, setIsAuth]             = useState(false)
-  const [childName, setChildName]       = useState('')
-  const [nameInput, setNameInput]       = useState('')
   const [progress, setProgress]         = useState<Progress | null>(null)
   const [buddyEmoji, setBuddyEmoji]     = useState('🦕')
   const [buddyPhrase, setBuddyPhrase]   = useState('Ready to play!')
-  const [showNameInput, setShowNameInput] = useState(false)
   const [dailyQuest, setDailyQuest]     = useState<Quest | null>(null)
   const [questProgress, setQuestProgress] = useState(0)
   const [drawerVariant, setDrawerVariant] = useState<'rewards' | 'profile' | null>(null)
   const [memoryMomentActive, setMemoryMomentActive] = useState(false)
   const [seenMemoryMoments] = useState(() => new Set<string>())
-  const nameRef = useRef<HTMLInputElement>(null)
-  const questRef = useRef<HTMLDivElement>(null)
+  const questRef    = useRef<HTMLDivElement>(null)
+  const gameCardRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    // Load child profile — drives age + name for the whole session
+    const profile = getChildProfile()
+    if (profile) {
+      setChildProfile(profile)
+      const themes = getThemesForAge(profile.ageGroup)
+      setAvailable(themes)
+      setActiveTheme(themes[0])
+      // Sync name to progress store for backward compat
+      saveChildName(profile.name)
+    } else {
+      setShowProfileSetup(true)
+    }
+
     const p = getProgress()
     setProgress(p)
-    if (p.childName) { setChildName(p.childName); setNameInput(p.childName) }
 
     const xp = calcXP(p.totalStars, p.totalCoins)
     const buddy = getActiveBuddy(calcLevel(xp))
     setBuddyEmoji(buddy.emoji)
     setBuddyPhrase(randomPhrase(buddy, 'idle'))
 
-    // Daily quest
     setDailyQuest(getDailyQuest())
     setQuestProgress(getQuestProgress())
 
-    // Pre-select theme from adventure picker link e.g. /?theme=dinos
     const themeParam = new URLSearchParams(window.location.search).get('theme')
     if (themeParam) {
-      const found = getThemesForAge(ageGroup).find(t => t.id === themeParam)
+      const ageForTheme = profile?.ageGroup ?? DEFAULT_AGE
+      const found = getThemesForAge(ageForTheme).find(t => t.id === themeParam)
       if (found) { setActiveTheme(found); setGameKey(k => k + 1) }
     }
 
@@ -93,23 +108,20 @@ export default function HomePage() {
     return () => subscription.unsubscribe()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  function applyName() {
-    const trimmed = nameInput.trim()
-    if (!trimmed) return
-    setChildName(trimmed)
-    saveChildName(trimmed)
-    setProgress(getProgress())
-    setGameKey(k => k + 1)
-    setShowNameInput(false)
-  }
-
-  function selectAge(age: AgeGroupId) {
-    const themes = getThemesForAge(age)
-    setAgeGroup(age)
+  function handleProfileComplete(profile: ChildProfile) {
+    setChildProfile(profile)
+    setShowProfileSetup(false)
+    saveChildName(profile.name)
+    const themes = getThemesForAge(profile.ageGroup)
     setAvailable(themes)
     setActiveTheme(themes[0])
     setGameKey(k => k + 1)
-    setShowModal(false)
+    // Update buddy based on profile choice
+    setBuddyEmoji(
+      profile.buddyId === 'rexy'  ? '🦕' :
+      profile.buddyId === 'puffy' ? '🦄' :
+      profile.buddyId === 'scout' ? '🐶' : '⚡'
+    )
   }
 
   function switchTheme(t: Theme) {
@@ -131,8 +143,8 @@ export default function HomePage() {
     if (level >= 2 && !isAuth) setShowModal(true)
   }, [isAuth])
 
-  const meta = THEME_META[activeTheme.id] ?? THEME_META.animals
-  const displayName = childName?.trim()
+  const meta        = THEME_META[activeTheme.id] ?? THEME_META.animals
+  const displayName = childProfile?.name ?? ''
   const earnedBadges = progress?.badges.filter(b => b.earned) ?? []
 
   return (
@@ -185,80 +197,27 @@ export default function HomePage() {
         {/* ── Parent-first hero — only for new visitors ── */}
         {!isAuth && <ParentHero />}
 
-        {/* ── EMOTIONAL FIRST: Buddy greeting ── */}
-        <div className="bg-white/60 backdrop-blur-sm rounded-3xl border border-white/80 shadow-lg p-5 mb-5">
-          <div className="flex items-center gap-4">
-            {/* Buddy */}
-            <div className="text-5xl animate-bounce flex-shrink-0 select-none">{buddyEmoji}</div>
+        {/* ── Profile identity — replaces age tabs + name input ── */}
+        {childProfile ? (
+          <ProfilePicker
+            profile={childProfile}
+            onSwitch={() => setShowProfileSetup(true)}
+          />
+        ) : null}
 
+        {/* ── Buddy greeting — simple now that profile handles identity ── */}
+        <div className="bg-white/60 backdrop-blur-sm rounded-3xl border border-white/80 shadow-lg px-5 py-4 mb-5">
+          <div className="flex items-center gap-4">
+            <div className="text-5xl animate-bounce flex-shrink-0 select-none">{buddyEmoji}</div>
             <div className="flex-1 min-w-0">
               <h1 className="text-xl font-black text-gray-900 leading-tight">
                 {displayName ? `Hi ${displayName}! 👋` : 'Hi there! 👋'}
               </h1>
-              {/* Speech bubble */}
               <div className="mt-1.5 bg-violet-50 border border-violet-100 rounded-2xl rounded-tl-sm px-3 py-1.5 inline-block">
                 <p className="text-sm font-bold text-violet-700">{buddyPhrase}</p>
               </div>
             </div>
           </div>
-
-          {/* Name input — friendly framing */}
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            {displayName && !showNameInput ? (
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500 font-semibold">
-                  🎮 Playing as <span className="font-black text-violet-600">{displayName}</span>
-                </span>
-                <button
-                  onClick={() => { setShowNameInput(true); setTimeout(() => nameRef.current?.focus(), 50) }}
-                  className="text-xs text-gray-400 hover:text-violet-500 font-bold"
-                >
-                  Change
-                </button>
-              </div>
-            ) : (
-              <div>
-                <p className="text-xs font-black text-gray-400 mb-2">Who&apos;s playing today?</p>
-                <div className="flex gap-2">
-                  <input
-                    ref={nameRef}
-                    type="text"
-                    placeholder="Enter child's name…"
-                    value={nameInput}
-                    onChange={e => setNameInput(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && applyName()}
-                    maxLength={30}
-                    className="flex-1 rounded-2xl border-2 border-violet-200 bg-white px-4 py-2.5 text-sm font-bold focus:outline-none focus:border-violet-400 min-h-[44px] placeholder:font-normal placeholder:text-gray-300"
-                  />
-                  <button
-                    onClick={applyName}
-                    className="rounded-2xl bg-violet-600 px-4 py-2.5 text-sm text-white font-black hover:bg-violet-700 min-h-[44px] shadow-md shadow-violet-200"
-                  >
-                    Let&apos;s go!
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* ── Age tabs ── */}
-        <div className="flex gap-2 mb-4">
-          {AGE_GROUPS.map(ag => (
-            <button
-              key={ag.id}
-              onClick={() => selectAge(ag.id)}
-              className={[
-                'flex flex-col items-center py-2.5 px-1 rounded-2xl border-2 transition-all text-center flex-1 font-bold min-h-[52px]',
-                ageGroup === ag.id
-                  ? 'bg-violet-600 border-violet-600 text-white shadow-lg shadow-violet-200'
-                  : 'bg-white/70 backdrop-blur-sm border-white/60 text-gray-500 hover:border-violet-300',
-              ].join(' ')}
-            >
-              <span className="text-lg mb-0.5 leading-none">{ag.emoji}</span>
-              <span className="text-[10px] font-black leading-none">{ag.label}</span>
-            </button>
-          ))}
         </div>
 
         {/* ── Theme strip — illustrated adventure cards ── */}
@@ -335,12 +294,18 @@ export default function HomePage() {
         {/* ── Daily quest teaser — visible without auth, drives the daily loop ── */}
         {dailyQuest && (
           <div ref={questRef} id="quest" className="mb-5">
-            <QuestTeaser quest={dailyQuest} progress={questProgress} />
+            <QuestTeaser
+              quest={dailyQuest}
+              progress={questProgress}
+              onScrollToGame={() =>
+                gameCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+              }
+            />
           </div>
         )}
 
         {/* ── Game card ── */}
-        <div className="rounded-3xl overflow-hidden shadow-xl border border-white/50 mb-6">
+        <div ref={gameCardRef} className="rounded-3xl overflow-hidden shadow-xl border border-white/50 mb-6">
           {/* Themed header with hero image */}
           <div className={`bg-gradient-to-r ${activeTheme.color} px-5 py-4 flex items-center justify-between`}>
             <div className="flex items-center gap-3">
@@ -393,7 +358,7 @@ export default function HomePage() {
               key={gameKey}
               theme={activeTheme}
               ageGroup={ageGroup}
-              childName={childName}
+              childName={displayName}
               isAuthenticated={isAuth}
               onLevelComplete={handleLevelComplete}
             />
@@ -490,7 +455,7 @@ export default function HomePage() {
             </Link>
           ) : (
             <button
-              onClick={() => setDrawerVariant('profile')}
+              onClick={() => setShowProfileSetup(true)}
               className="flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-violet-600 transition-colors"
             >
               <span className="text-xl leading-none">👤</span>
@@ -510,6 +475,11 @@ export default function HomePage() {
       )}
 
       {showModal && <SignupModal moves={completedMoves} onClose={() => { setShowModal(false); setGameKey(k => k + 1) }} />}
+
+      {/* Profile setup overlay — shown on first visit or when switching child */}
+      {showProfileSetup && (
+        <ProfileSetup onComplete={handleProfileComplete} />
+      )}
     </div>
   )
 }
