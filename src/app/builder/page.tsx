@@ -8,6 +8,7 @@ import {
   getTemplatesForAge, getThemesForAge,
   type AgeGroupId, type Theme,
 } from '@/lib/themes'
+import { makeGameTitle } from '@/lib/titleTemplate'
 
 const ILLUSTRATED = new Set(['animals', 'dinos', 'unicorns', 'ocean', 'space', 'superheroes', 'food', 'farm'])
 
@@ -44,22 +45,14 @@ export default function BuilderPage() {
   function goToCustomize() {
     if (!selectedTemplate || !selectedTheme) return
     const name = childName.trim()
-    setTitle(
-      name
-        ? `${name}'s ${selectedTheme.name} ${selectedTemplate.name}`
-        : `My ${selectedTheme.name} ${selectedTemplate.name}`
-    )
+    setTitle(makeGameTitle(name, selectedTheme.name, selectedTemplate.name))
     setStep('customize')
   }
 
   function handleChildName(name: string) {
     setChildName(name)
     if (selectedTemplate && selectedTheme) {
-      setTitle(
-        name.trim()
-          ? `${name.trim()}'s ${selectedTheme.name} ${selectedTemplate.name}`
-          : `My ${selectedTheme.name} ${selectedTemplate.name}`
-      )
+      setTitle(makeGameTitle(name.trim(), selectedTheme.name, selectedTemplate.name))
     }
   }
 

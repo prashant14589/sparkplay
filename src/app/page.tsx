@@ -12,6 +12,7 @@ import { getActiveBuddy, calcXP, calcLevel, randomPhrase } from '@/lib/buddy'
 import QuestTeaser from '@/components/QuestTeaser'
 import GuestDrawer from '@/components/GuestDrawer'
 import MemoryMoment from '@/components/MemoryMoment'
+import ParentHero from '@/components/ParentHero'
 import { MEMORY_THEME_IDS } from '@/lib/memoryThemes'
 
 const DEFAULT_AGE: AgeGroupId = '4-6'
@@ -178,6 +179,9 @@ export default function HomePage() {
       </nav>
 
       <div className="max-w-md mx-auto px-4 relative z-10">
+
+        {/* ── Parent-first hero — only for new visitors ── */}
+        {!isAuth && <ParentHero />}
 
         {/* ── EMOTIONAL FIRST: Buddy greeting ── */}
         <div className="bg-white/60 backdrop-blur-sm rounded-3xl border border-white/80 shadow-lg p-5 mb-5">
@@ -382,7 +386,7 @@ export default function HomePage() {
             {!isAuth && (
               <Link href="/signup"
                 className="text-xs text-white font-black bg-white/20 hover:bg-white/30 rounded-full px-3 py-1.5 transition-colors">
-                Unlock all →
+                Save progress →
               </Link>
             )}
           </div>

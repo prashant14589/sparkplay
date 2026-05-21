@@ -407,8 +407,8 @@ export default function PuzzleMaker({ childName, ageGroup = '4-6', gameId, exist
 
       {/* Puzzle board */}
       <div>
-        <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2 text-center">
-          Drag or tap a piece, then tap its spot on the board
+        <p className="text-sm font-black text-gray-400 mb-2 text-center">
+          {activeTray !== null ? '✨ Now tap a glowing spot!' : 'Tap a piece below, then tap where it goes ↓'}
         </p>
         <div
           ref={boardRef}
@@ -428,8 +428,12 @@ export default function PuzzleMaker({ childName, ageGroup = '4-6', gameId, exist
                 onDrop={(e) => handleDropOnSlot(e, slotRow, slotCol)}
                 style={{ width: slotW, height: slotH }}
                 className={[
-                  'relative border border-violet-100 transition-all',
-                  placedPiece ? '' : 'bg-violet-50 hover:bg-violet-100 cursor-pointer',
+                  'relative border transition-all',
+                  placedPiece
+                    ? 'border-violet-100'
+                    : activeTray !== null
+                      ? 'border-violet-400 bg-violet-100 cursor-pointer animate-pulse'
+                      : 'border-violet-100 bg-violet-50 hover:bg-violet-100 hover:border-violet-300 cursor-pointer',
                 ].join(' ')}
               >
                 {placedPiece ? (
@@ -443,8 +447,13 @@ export default function PuzzleMaker({ childName, ageGroup = '4-6', gameId, exist
                     }}
                   />
                 ) : (
-                  <div className="absolute inset-0 flex items-center justify-center text-violet-200 text-xs font-bold">
-                    {slotRow + 1},{slotCol + 1}
+                  /* Ghost indicator — no coordinates, just a soft visual cue */
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className={`rounded-full transition-all ${
+                      activeTray !== null
+                        ? 'w-3 h-3 bg-violet-400 opacity-80'
+                        : 'w-2 h-2 bg-violet-200 opacity-50'
+                    }`} />
                   </div>
                 )}
               </div>
@@ -456,8 +465,8 @@ export default function PuzzleMaker({ childName, ageGroup = '4-6', gameId, exist
       {/* Piece tray */}
       {trayPieces.length > 0 && (
         <div>
-          <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2 text-center">
-            Pieces tray — tap a piece, then tap its spot above
+          <p className="text-sm font-bold text-gray-400 mb-2 text-center">
+            {activeTray !== null ? '👆 Selected! Now tap a spot above ↑' : 'Tap a piece to pick it up'}
           </p>
           <div className="flex flex-wrap gap-2 justify-center p-3 bg-gray-50 rounded-2xl border-2 border-gray-100">
             {trayPieces.map(piece => (

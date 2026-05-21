@@ -33,3 +33,10 @@
  GET /login 200 in 47ms (next.js: 4ms, proxy.ts: 5ms, application-code: 38ms)
  GET / 200 in 52ms (next.js: 4ms, proxy.ts: 6ms, application-code: 43ms)
  GET /login 200 in 45ms (next.js: 4ms, proxy.ts: 6ms, application-code: 35ms)
+✓ Compiled in 83ms
+ GET / 200 in 436ms (next.js: 101ms, proxy.ts: 128ms, application-code: 207ms)
+ GET / 200 in 55ms (next.js: 6ms, proxy.ts: 6ms, application-code: 43ms)
+ GET /login 200 in 138ms (next.js: 50ms, proxy.ts: 5ms, application-code: 83ms)
+ GET /login 200 in 50ms (next.js: 4ms, proxy.ts: 4ms, application-code: 41ms)
+ GET / 200 in 60ms (next.js: 4ms, proxy.ts: 6ms, application-code: 50ms)
+ GET /login 200 in 55ms (next.js: 5ms, proxy.ts: 5ms, application-code: 44ms)
