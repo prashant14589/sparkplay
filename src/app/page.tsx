@@ -14,6 +14,8 @@ import GuestDrawer from '@/components/GuestDrawer'
 import MemoryMoment from '@/components/MemoryMoment'
 import ParentHero from '@/components/ParentHero'
 import { MEMORY_THEME_IDS } from '@/lib/memoryThemes'
+import { getThemeBoardStyle } from '@/lib/themeBoard'
+import MemoryThemeCard from '@/components/MemoryThemeCard'
 
 const DEFAULT_AGE: AgeGroupId = '4-6'
 const ILLUSTRATED = new Set(['animals', 'dinos', 'unicorns', 'ocean', 'space', 'superheroes', 'food', 'farm'])
@@ -126,7 +128,7 @@ export default function HomePage() {
     setProgress(getProgress())
     recordGameForQuest('memory')
     setQuestProgress(getQuestProgress())
-    if (level === 1 && !isAuth) setShowModal(true)
+    if (level >= 2 && !isAuth) setShowModal(true)
   }, [isAuth])
 
   const meta = THEME_META[activeTheme.id] ?? THEME_META.animals
@@ -310,33 +312,14 @@ export default function HomePage() {
               <div className="flex-1 h-px bg-amber-100" />
             </div>
             <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-hide snap-x snap-mandatory">
-              {availableThemes.filter(t => MEMORY_THEME_IDS.has(t.id)).map(t => {
-                const isActive = activeTheme.id === t.id
-                return (
-                  <button
-                    key={t.id}
-                    onClick={() => switchTheme(t)}
-                    className={[
-                      'relative flex-shrink-0 rounded-2xl overflow-hidden snap-start transition-all',
-                      'w-[88px] h-[72px]',
-                      isActive
-                        ? 'ring-2 ring-amber-400 ring-offset-2 scale-105 shadow-xl'
-                        : 'opacity-90 hover:opacity-100 hover:scale-102 shadow-md',
-                    ].join(' ')}
-                    style={{ outline: isActive ? '3px solid #f59e0b' : 'none', outlineOffset: 3 }}
-                  >
-                    {/* Warm sepia gradient — deliberately analog */}
-                    <div className={`absolute inset-0 bg-gradient-to-br ${t.color}`} style={{ filter: 'saturate(0.75) brightness(0.95)' }}>
-                      <span className="absolute bottom-1 right-1 text-3xl leading-none drop-shadow">{t.emoji}</span>
-                    </div>
-                    {/* Warm overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-amber-900/40 to-transparent" />
-                    <span className="absolute bottom-1.5 left-2 text-[10px] font-black text-white drop-shadow leading-tight">
-                      {t.name}
-                    </span>
-                  </button>
-                )
-              })}
+              {availableThemes.filter(t => MEMORY_THEME_IDS.has(t.id)).map(t => (
+                <MemoryThemeCard
+                  key={t.id}
+                  theme={t}
+                  isActive={activeTheme.id === t.id}
+                  onClick={() => switchTheme(t)}
+                />
+              ))}
             </div>
           </div>
         )}
@@ -391,7 +374,21 @@ export default function HomePage() {
             )}
           </div>
 
-          <div className={`${activeTheme.bg} p-4`}>
+          <div className={`${getThemeBoardStyle(activeTheme.id).bgClass} p-4 relative overflow-hidden`}>
+            {/* Faint tiled pattern emojis — theme bleeds into the game board */}
+            {getThemeBoardStyle(activeTheme.id).patternEmojis.map((em, i) => (
+              <span
+                key={i}
+                aria-hidden="true"
+                className="pointer-events-none select-none absolute text-4xl opacity-[0.06]"
+                style={{
+                  top: `${[10, 55, 80][i] ?? 30}%`,
+                  left: `${[5, 88, 45][i] ?? 50}%`,
+                }}
+              >
+                {em}
+              </span>
+            ))}
             <MemoryMatch
               key={gameKey}
               theme={activeTheme}
